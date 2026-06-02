@@ -8,7 +8,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://life-tracker--portfolio-blog-ee307.us-east4.hosted.app',
+      'https://life-tracker-894343441345.us-central1.run.app',
     ],
     credentials: true,
   });
