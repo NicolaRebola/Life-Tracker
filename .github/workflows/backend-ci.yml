@@ -38,3 +38,6 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Build Docker image
+        run: docker build -t life-tracker-backend:test .
