@@ -8,14 +8,17 @@ runConfig:
   concurrency: 80
 
 # Environment variables and secrets.
-# env:
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
+env:
+  - variable: NEXT_PUBLIC_API_URL
+    value: https://life-tracker-894343441345.us-central1.run.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: API_URL
+    value: https://life-tracker-894343441345.us-central1.run.app
+    availability:
+      - RUNTIME
 
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
