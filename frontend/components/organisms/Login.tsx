@@ -20,9 +20,6 @@ export default function Login() {
     });
 
     if (!res.ok) return;
-
-    const data = res.json();
-
     window.location.href = '/home';
   }
 

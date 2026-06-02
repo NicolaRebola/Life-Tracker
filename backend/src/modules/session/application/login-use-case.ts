@@ -3,7 +3,8 @@ import { createHash, randomBytes } from 'crypto';
 import { FirebaseAdminService } from 'src/shared/firebase/firebase-admin.service';
 import { UserRepository } from '../infrastructure/user.repository';
 import { SessionRepository } from '../infrastructure/session.repository';
-
+import { User } from '@prisma/client';
+import * as admin from 'firebase-admin';
 @Injectable()
 export class LoginUseCase {
   constructor(
@@ -17,18 +18,26 @@ export class LoginUseCase {
     userAgent?: string;
     ipAddress?: string;
   }) {
-    let decoded;
+    let decoded: admin.auth.DecodedIdToken;
     try {
       decoded = await this.firebase.verifyIdToken(input.idToken);
     } catch {
       throw new UnauthorizedException('Invalid Firebase token');
     }
 
-    const user = await this.users.upsertByFirebaseUid({
+    const displayNameClaim: unknown = decoded['name'];
+
+    const displayName =
+      typeof displayNameClaim === 'string' ? displayNameClaim : null;
+    const user: User | null = await this.users.upsertByFirebaseUid({
       firebaseUid: decoded.uid,
       email: decoded.email!,
-      displayName: decoded.name ?? null,
+      displayName,
     });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
 
     const sessionToken = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(sessionToken).digest('hex');
