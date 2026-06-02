@@ -1,0 +1,14 @@
+steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - life-tracker-api
+      - --source
+      - backend
+      - --region
+      - us-central1
+      - --project
+      - portfolio-blog-ee307
+      - --allow-unauthenticated
