@@ -20,6 +20,38 @@ env:
     availability:
       - RUNTIME
 
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBHPZA1LiA9x_ZGivIXxhJVsbLq8WSG1X4
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: portfolio-blog-ee307.firebaseapp.com
+    availability:
+      - BUILD
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: portfolio-blog-ee307
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: portfolio-blog-ee307.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: 894343441345
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:894343441345:web:405ac8a0d91f18ae6a1d40
+    availability:
+      - BUILD
+      - RUNTIME
+
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
