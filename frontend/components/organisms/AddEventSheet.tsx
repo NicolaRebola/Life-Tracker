@@ -10,7 +10,11 @@ import {
   SheetTrigger,
 } from "@/components/tailgrids/core/sheet";
 
-export default function AddEventSheet() {
+type AddEventSheetProps = {
+  onEventCreated?: () => void;
+};
+
+export default function AddEventSheet({ onEventCreated }: AddEventSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,10 +30,20 @@ export default function AddEventSheet() {
 
       <SheetOverlay>
         <SheetContent side="bottom" className="md:hidden">
-          <EventForm onSuccess={() => setIsOpen(false)} />
+          <EventForm
+            onSuccess={() => {
+              setIsOpen(false);
+              onEventCreated?.();
+            }}
+          />
         </SheetContent>
         <SheetContent side="right" className="hidden md:flex">
-          <EventForm onSuccess={() => setIsOpen(false)} />
+          <EventForm
+            onSuccess={() => {
+              setIsOpen(false);
+              onEventCreated?.();
+            }}
+          />
         </SheetContent>
       </SheetOverlay>
     </Sheet>
