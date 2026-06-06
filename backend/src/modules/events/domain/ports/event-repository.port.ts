@@ -22,17 +22,28 @@ export type EventTagSuggestion = {
   label: string;
 };
 
+export type ApplyStatusTransitionCommand = {
+  userId: string;
+  eventId: string;
+  fromStatus: EventStatus;
+  toStatus: EventStatus;
+};
+
+export type EventStatusTransitionWriteResult = {
+  event: Event;
+  applied: boolean;
+};
+
 export interface EventRepositoryPort {
   save(event: Event): Promise<Event>;
   findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents>;
+  findByIdForUser(userId: string, eventId: string): Promise<Event | null>;
   searchTagsByName(
     userId: string,
     name: string,
     limit: number,
   ): Promise<EventTagSuggestion[]>;
-  updateStatus(
-    userId: string,
-    eventId: string,
-    status: EventStatus,
-  ): Promise<Event | null>;
+  applyStatusTransition(
+    command: ApplyStatusTransitionCommand,
+  ): Promise<EventStatusTransitionWriteResult>;
 }

@@ -20,6 +20,7 @@ import { UPDATE_EVENT_STATUS } from '../application/ports/inbound/update-event-s
 import { CreateEventValidationError } from '../application/errors/create-event-validation.error';
 import { EventNotFoundError } from '../application/errors/event-not-found.error';
 import { ListEventsValidationError } from '../application/errors/list-events-validation.error';
+import { UpdateEventStatusConflictError } from '../application/errors/update-event-status-conflict.error';
 import { UpdateEventStatusValidationError } from '../application/errors/update-event-status-validation.error';
 import { SessionGuard } from 'src/modules/session/application/session.guard';
 import type { AuthenticatedRequest } from 'src/modules/session/application/session.guard';
@@ -160,6 +161,18 @@ export class EventController {
         throw new HttpException(
           { message: error.message },
           HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (error instanceof UpdateEventStatusConflictError) {
+        throw new HttpException(
+          {
+            message: error.message,
+            fromStatus: error.fromStatus,
+            currentStatus: error.currentStatus,
+            requestedStatus: error.requestedStatus,
+          },
+          HttpStatus.CONFLICT,
         );
       }
 

@@ -141,22 +141,12 @@ export class PrismaEventRepository implements EventRepositoryPort {
     }));
   }
 
-  async updateStatus(
+  async findByIdForUser(
     userId: string,
     eventId: string,
-    status: EventStatus,
   ): Promise<Event | null> {
-    const existing = await this.prisma.event.findFirst({
+    const row = await this.prisma.event.findFirst({
       where: { id: eventId, userId },
-    });
-
-    if (!existing) {
-      return null;
-    }
-
-    const updated = await this.prisma.event.update({
-      where: { id: eventId },
-      data: { status },
       include: {
         tags: {
           include: { tag: true },
@@ -164,6 +154,51 @@ export class PrismaEventRepository implements EventRepositoryPort {
       },
     });
 
-    return EventPrismaMapper.toDomain(updated);
+    if (!row) {
+      return null;
+    }
+
+    return EventPrismaMapper.toDomain(row);
+  }
+
+  async applyStatusTransition({
+    userId,
+    eventId,
+    fromStatus,
+    toStatus,
+  }: {
+    userId: string;
+    eventId: string;
+    fromStatus: EventStatus;
+    toStatus: EventStatus;
+  }): Promise<{ event: Event; applied: boolean }> {
+    return this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.event.updateMany({
+        where: {
+          id: eventId,
+          userId,
+          status: fromStatus,
+        },
+        data: { status: toStatus },
+      });
+
+      const row = await tx.event.findFirst({
+        where: { id: eventId, userId },
+        include: {
+          tags: {
+            include: { tag: true },
+          },
+        },
+      });
+
+      if (!row) {
+        throw new Error('Event not found after status transition attempt');
+      }
+
+      return {
+        event: EventPrismaMapper.toDomain(row),
+        applied: count > 0,
+      };
+    });
   }
 }

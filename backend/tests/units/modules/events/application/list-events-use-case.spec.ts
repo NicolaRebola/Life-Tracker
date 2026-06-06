@@ -29,7 +29,8 @@ describe('ListEventsUseCase', () => {
       save: jest.fn(),
       findMany,
       searchTagsByName: jest.fn(),
-      updateStatus: jest.fn(),
+      findByIdForUser: jest.fn(),
+      applyStatusTransition: jest.fn(),
     };
     useCase = new ListEventsUseCase(repository);
   });

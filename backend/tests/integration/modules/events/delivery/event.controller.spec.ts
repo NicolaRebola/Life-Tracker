@@ -10,6 +10,8 @@ import { UPDATE_EVENT_STATUS } from 'src/modules/events/application/ports/inboun
 import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
 import { EventNotFoundError } from 'src/modules/events/application/errors/event-not-found.error';
 import { ListEventsValidationError } from 'src/modules/events/application/errors/list-events-validation.error';
+import { UpdateEventStatusConflictError } from 'src/modules/events/application/errors/update-event-status-conflict.error';
+import { UpdateEventStatusValidationError } from 'src/modules/events/application/errors/update-event-status-validation.error';
 import {
   AuthenticatedRequest,
   SessionGuard,
@@ -212,6 +214,59 @@ describe('EventController (integration)', () => {
       .patch('/events/missing-event/status')
       .send({ status: 'DONE' })
       .expect(404);
+  });
+
+  it('maps invalid status transitions to bad request responses', async () => {
+    updateEventStatusUseCase.execute.mockRejectedValueOnce(
+      new UpdateEventStatusValidationError(
+        'No se puede transicionar de TODO a DONE',
+        ['status'],
+      ),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/event-1/status')
+      .send({ status: 'DONE' })
+      .expect(400)
+      .expect(({ body }: { body: { message: string; fields: string[] } }) => {
+        expect(body.message).toBe('No se puede transicionar de TODO a DONE');
+        expect(body.fields).toEqual(['status']);
+      });
+  });
+
+  it('maps concurrent status conflicts to conflict responses', async () => {
+    updateEventStatusUseCase.execute.mockRejectedValueOnce(
+      new UpdateEventStatusConflictError(
+        'El evento cambió de estado concurrentemente',
+        'IN_PROGRESS',
+        'TODO',
+        'DONE',
+      ),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/event-1/status')
+      .send({ status: 'DONE' })
+      .expect(409)
+      .expect(
+        ({
+          body,
+        }: {
+          body: {
+            message: string;
+            fromStatus: string;
+            currentStatus: string;
+            requestedStatus: string;
+          };
+        }) => {
+          expect(body.message).toBe(
+            'El evento cambió de estado concurrentemente',
+          );
+          expect(body.fromStatus).toBe('IN_PROGRESS');
+          expect(body.currentStatus).toBe('TODO');
+          expect(body.requestedStatus).toBe('DONE');
+        },
+      );
   });
 
   it('maps use case validation errors to bad request responses', async () => {

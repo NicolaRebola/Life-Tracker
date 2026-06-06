@@ -1,6 +1,12 @@
+import { EventStatusTransitionError } from '../errors/event-status-transition.error';
 import { EventValidationError } from '../errors/event-validation.error';
 import { Tag, type TagPrimitives } from './tag.entity';
-import { type EventStatus, isEventStatus } from './event-status';
+import {
+  canTransitionEventStatus,
+  type EventStatus,
+  isEventStatus,
+} from './event-status';
+import type { EventStatusTransition } from './event-status-transition';
 
 export type EventPrimitives = {
   id?: string;
@@ -55,15 +61,55 @@ export class Event {
     return new Event(props);
   }
 
-  withStatus(status: EventStatus): Event {
+  transitionTo(status: EventStatus): {
+    event: Event;
+    transition: EventStatusTransition;
+  } {
     if (!isEventStatus(status)) {
       throw new EventValidationError('Estado inválido', ['status']);
     }
 
-    return new Event({
-      ...this.props,
-      status,
-    });
+    if (!this.props.id) {
+      throw new EventValidationError('Evento inválido', ['eventId']);
+    }
+
+    const occurredAt = new Date();
+    const fromStatus = this.props.status;
+
+    if (fromStatus === status) {
+      return {
+        event: this,
+        transition: {
+          eventId: this.props.id,
+          fromStatus,
+          toStatus: status,
+          occurredAt,
+          changed: false,
+        },
+      };
+    }
+
+    if (!canTransitionEventStatus(fromStatus, status)) {
+      throw new EventStatusTransitionError(
+        `No se puede transicionar de ${fromStatus} a ${status}`,
+        fromStatus,
+        status,
+      );
+    }
+
+    return {
+      event: new Event({
+        ...this.props,
+        status,
+      }),
+      transition: {
+        eventId: this.props.id,
+        fromStatus,
+        toStatus: status,
+        occurredAt,
+        changed: true,
+      },
+    };
   }
 
   toPrimitives(): EventPrimitives {

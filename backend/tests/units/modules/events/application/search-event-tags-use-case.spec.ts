@@ -16,7 +16,8 @@ describe('SearchEventTagsUseCase', () => {
       save: jest.fn(),
       findMany: jest.fn(),
       searchTagsByName,
-      updateStatus: jest.fn(),
+      findByIdForUser: jest.fn(),
+      applyStatusTransition: jest.fn(),
     };
     useCase = new SearchEventTagsUseCase(repository);
   });
