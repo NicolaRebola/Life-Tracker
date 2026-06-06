@@ -1,9 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
-import { CheckDbHealthUseCase } from '../../application/check-db-health.use-case';
+import { Controller, Get, Inject } from '@nestjs/common';
+import {
+  CHECK_DB_HEALTH,
+  type CheckDbHealthPort,
+} from '../../application/check-db-health.port';
 
 @Controller('health')
 export class HealthController {
-  constructor(private readonly checkDbHealthUseCase: CheckDbHealthUseCase) {}
+  constructor(
+    @Inject(CHECK_DB_HEALTH)
+    private readonly checkDbHealthUseCase: CheckDbHealthPort,
+  ) {}
 
   @Get()
   getHealth() {

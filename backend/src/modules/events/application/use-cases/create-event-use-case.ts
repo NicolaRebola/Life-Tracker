@@ -1,24 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EVENT_REPOSITORY } from './event-repository.port';
+import { EVENT_REPOSITORY } from '../ports/outbound/event-repository.port';
 import type {
   EventRepositoryPort,
   EventToCreate,
   TagToCreate,
-} from './event-repository.port';
-import { CreateEventValidationError } from './create-event.errors';
-
-export type CreateEventCommand = {
-  userId: string;
-  fromDateTime: string;
-  toDateTime: string;
-  name: string;
-  description?: string;
-  notes?: string;
-  tags?: string[];
-};
+} from '../ports/outbound/event-repository.port';
+import type { CreateEventCommand, CreateEventPort } from '../ports/inbound/create-event.port';
+import { CreateEventValidationError } from '../errors/create-event.errors';
 
 @Injectable()
-export class CreateEventUseCase {
+export class CreateEventUseCase implements CreateEventPort {
   constructor(
     @Inject(EVENT_REPOSITORY)
     private readonly eventRepository: EventRepositoryPort,

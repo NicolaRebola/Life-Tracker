@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
+import type {
+  SessionRepositoryPort,
+  SessionToCreate,
+} from '../application/session-repository.port';
 
 @Injectable()
-export class SessionRepository {
+export class SessionRepository implements SessionRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: {
-    userId: string;
-    tokenHash: string;
-    expiresAt: Date;
-    userAgent?: string;
-    ipAddress?: string;
-  }) {
+  async create(data: SessionToCreate) {
     return this.prisma.session.create({ data });
   }
 

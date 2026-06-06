@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
+import type {
+  UserRepositoryPort,
+  UserToUpsert,
+} from '../application/user-repository.port';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository implements UserRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async upsertByFirebaseUid(data: {
-    firebaseUid: string;
-    email: string;
-    displayName?: string | null;
-  }) {
+  async upsertByFirebaseUid(data: UserToUpsert) {
     return this.prisma.user.upsert({
       where: { firebaseUid: data.firebaseUid },
       update: {

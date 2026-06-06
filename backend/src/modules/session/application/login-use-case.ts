@@ -1,37 +1,51 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'crypto';
-import { FirebaseAdminService } from 'src/shared/firebase/firebase-admin.service';
-import { UserRepository } from '../infrastructure/user.repository';
-import { SessionRepository } from '../infrastructure/session.repository';
-import { User } from '@prisma/client';
-import * as admin from 'firebase-admin';
+import {
+  FIREBASE_TOKEN_VERIFIER,
+  type FirebaseTokenPayload,
+  type FirebaseTokenVerifierPort,
+} from './firebase-token-verifier.port';
+import {
+  USER_REPOSITORY,
+  type SessionUser,
+  type UserRepositoryPort,
+} from './user-repository.port';
+import {
+  SESSION_REPOSITORY,
+  type SessionRepositoryPort,
+} from './session-repository.port';
+import type { LoginCommand, LoginPort, LoginResult } from './login.port';
+
 @Injectable()
-export class LoginUseCase {
+export class LoginUseCase implements LoginPort {
   constructor(
-    private readonly firebase: FirebaseAdminService,
-    private readonly users: UserRepository,
-    private readonly sessions: SessionRepository,
+    @Inject(FIREBASE_TOKEN_VERIFIER)
+    private readonly firebase: FirebaseTokenVerifierPort,
+    @Inject(USER_REPOSITORY)
+    private readonly users: UserRepositoryPort,
+    @Inject(SESSION_REPOSITORY)
+    private readonly sessions: SessionRepositoryPort,
   ) {}
 
-  async execute(input: {
-    idToken: string;
-    userAgent?: string;
-    ipAddress?: string;
-  }) {
-    let decoded: admin.auth.DecodedIdToken;
+  async execute(input: LoginCommand): Promise<LoginResult> {
+    let decoded: FirebaseTokenPayload;
     try {
       decoded = await this.firebase.verifyIdToken(input.idToken);
     } catch {
       throw new UnauthorizedException('Invalid Firebase token');
     }
 
-    const displayNameClaim: unknown = decoded['name'];
+    if (!decoded.email) {
+      throw new UnauthorizedException('Firebase token does not include email');
+    }
+
+    const displayNameClaim: unknown = decoded.name;
 
     const displayName =
       typeof displayNameClaim === 'string' ? displayNameClaim : null;
-    const user: User | null = await this.users.upsertByFirebaseUid({
+    const user: SessionUser | null = await this.users.upsertByFirebaseUid({
       firebaseUid: decoded.uid,
-      email: decoded.email!,
+      email: decoded.email,
       displayName,
     });
 

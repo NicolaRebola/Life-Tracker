@@ -4,7 +4,7 @@ import {
   EventRepositoryPort,
   EventToCreate,
   TagToCreate,
-} from '../../application/event-repository.port';
+} from '../../application/ports/outbound/event-repository.port';
 
 @Injectable()
 export class EventRepository implements EventRepositoryPort {

@@ -3,11 +3,15 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
-import { SessionRepository } from '../infrastructure/session.repository';
 import { SESSION_COOKIE_NAME } from 'src/constants';
 import { Request } from 'express';
 import { createHash } from 'crypto';
+import {
+  SESSION_REPOSITORY,
+  type SessionRepositoryPort,
+} from './session-repository.port';
 
 export type AuthenticatedRequest = Request & {
   user: {
@@ -22,7 +26,10 @@ export type AuthenticatedRequest = Request & {
 
 @Injectable()
 export class SessionGuard implements CanActivate {
-  constructor(private readonly sessions: SessionRepository) {}
+  constructor(
+    @Inject(SESSION_REPOSITORY)
+    private readonly sessions: SessionRepositoryPort,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();

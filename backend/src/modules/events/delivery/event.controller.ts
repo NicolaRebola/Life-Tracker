@@ -7,16 +7,21 @@ import {
   Post,
   Req,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
-import { CreateEventUseCase } from '../application/create-event-use-case';
-import { CreateEventValidationError } from '../application/create-event.errors';
+import { CREATE_EVENT } from '../application/ports/inbound/create-event.port';
+import { CreateEventValidationError } from '../application/errors/create-event.errors';
 import { SessionGuard } from 'src/modules/session/application/session.guard';
 import type { AuthenticatedRequest } from 'src/modules/session/application/session.guard';
+import type { CreateEventPort } from '../application/ports/inbound/create-event.port';
 import type { CreateEventDto } from './dto/create-event.dto';
 
 @Controller('events')
 export class EventController {
-  constructor(private readonly createEventUseCase: CreateEventUseCase) {}
+  constructor(
+    @Inject(CREATE_EVENT)
+    private readonly createEventUseCase: CreateEventPort,
+  ) {}
 
   @UseGuards(SessionGuard)
   @Post()

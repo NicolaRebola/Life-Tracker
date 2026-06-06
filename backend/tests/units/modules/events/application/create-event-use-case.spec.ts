@@ -1,10 +1,10 @@
-﻿import { CreateEventValidationError } from 'src/modules/events/application/create-event.errors';
-import { CreateEventUseCase } from 'src/modules/events/application/create-event-use-case';
+﻿import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event.errors';
+import { CreateEventUseCase } from 'src/modules/events/application/use-cases/create-event-use-case';
 import type {
   EventRepositoryPort,
   EventToCreate,
   TagToCreate,
-} from 'src/modules/events/application/event-repository.port';
+} from 'src/modules/events/application/ports/outbound/event-repository.port';
 
 describe('CreateEventUseCase', () => {
   let createWithTags: jest.Mock;
