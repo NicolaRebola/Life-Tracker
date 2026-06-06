@@ -19,6 +19,7 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
 
   sessions Session[]
+  events Event[]
 
   @@map("users")
 }
@@ -38,4 +39,40 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+model Event {
+  id      String    @id @default(uuid())
+  fromDateTime   DateTime
+  toDateTime   DateTime
+  name   String
+  description  String
+  notes  String @default("")
+  userId   String
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags EventTag[]
+
+  @@map("events")
+}
+
+model Tag {
+  id String @id @default(uuid())
+  name String @unique
+  label String
+
+  events EventTag[]
+
+  @@map("tags")
+}
+
+model EventTag {
+  eventId String @map("event_id")
+  tagId   String @map("tag_id")
+  
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([eventId, tagId])
+  @@map("event_tags")
 }

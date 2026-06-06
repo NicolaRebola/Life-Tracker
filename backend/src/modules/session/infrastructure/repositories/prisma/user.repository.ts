@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
+import type { UserRepositoryPort, UserToUpsert } from '../../../domain';
+import { UserPrismaMapper } from '../../mappers/prisma/user-prisma.mapper';
 
 @Injectable()
-export class UserRepository {
+export class PrismaUserRepository implements UserRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async upsertByFirebaseUid(data: {
-    firebaseUid: string;
-    email: string;
-    displayName?: string | null;
-  }) {
-    return this.prisma.user.upsert({
+  async upsertByFirebaseUid(data: UserToUpsert) {
+    const user = await this.prisma.user.upsert({
       where: { firebaseUid: data.firebaseUid },
       update: {
         email: data.email,
@@ -22,9 +20,12 @@ export class UserRepository {
         displayName: data.displayName,
       },
     });
+
+    return UserPrismaMapper.toDomain(user);
   }
 
   async findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    return user ? UserPrismaMapper.toDomain(user) : null;
   }
 }

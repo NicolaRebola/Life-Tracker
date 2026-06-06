@@ -1,8 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import type { FirebaseTokenVerifierPort } from 'src/modules/session/application/ports/inbound/firebase-token-verifier.port';
 
 @Injectable()
-export class FirebaseAdminService implements OnModuleInit {
+export class FirebaseAdminService
+  implements OnModuleInit, FirebaseTokenVerifierPort
+{
   onModuleInit() {
     if (!admin.apps.length) {
       admin.initializeApp({

@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/shared/prisma/prisma.service';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  DB_HEALTH_CHECKER,
+  type DbHealthCheckerPort,
+} from './db-health-checker.port';
+import type { CheckDbHealthPort, DbHealthResult } from './check-db-health.port';
 
 @Injectable()
-export class CheckDbHealthUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+export class CheckDbHealthUseCase implements CheckDbHealthPort {
+  constructor(
+    @Inject(DB_HEALTH_CHECKER)
+    private readonly dbHealthChecker: DbHealthCheckerPort,
+  ) {}
 
-  async execute() {
+  async execute(): Promise<DbHealthResult> {
     const startedAt = Date.now();
 
-    await this.prisma.$queryRaw`SELECT 1`;
+    await this.dbHealthChecker.ping();
 
     return {
       status: 'ok',
