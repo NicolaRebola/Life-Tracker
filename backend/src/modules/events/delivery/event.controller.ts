@@ -4,13 +4,13 @@ import {
   HttpCode,
   HttpException,
   HttpStatus,
+  Inject,
   Post,
   Req,
   UseGuards,
-  Inject,
 } from '@nestjs/common';
 import { CREATE_EVENT } from '../application/ports/inbound/create-event.port';
-import { CreateEventValidationError } from '../application/errors/create-event.errors';
+import { CreateEventValidationError } from '../application/errors/create-event-validation.error';
 import { SessionGuard } from 'src/modules/session/application/session.guard';
 import type { AuthenticatedRequest } from 'src/modules/session/application/session.guard';
 import type { CreateEventPort } from '../application/ports/inbound/create-event.port';

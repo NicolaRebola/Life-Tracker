@@ -1,3 +1,3 @@
-import { EventRepository } from './event.repository';
+import { PrismaEventRepository } from './prisma/event.repository';
 
-export const REPOSITORIES = [EventRepository];
+export const REPOSITORIES = [PrismaEventRepository];

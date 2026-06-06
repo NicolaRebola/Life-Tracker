@@ -4,17 +4,20 @@ import {
   FIREBASE_TOKEN_VERIFIER,
   type FirebaseTokenPayload,
   type FirebaseTokenVerifierPort,
-} from './firebase-token-verifier.port';
-import {
-  USER_REPOSITORY,
-  type SessionUser,
-  type UserRepositoryPort,
-} from './user-repository.port';
+} from '../ports/inbound/firebase-token-verifier.port';
 import {
   SESSION_REPOSITORY,
+  Session,
+  USER_REPOSITORY,
   type SessionRepositoryPort,
-} from './session-repository.port';
-import type { LoginCommand, LoginPort, LoginResult } from './login.port';
+  type User,
+  type UserRepositoryPort,
+} from '../../domain';
+import type {
+  LoginCommand,
+  LoginPort,
+  LoginResult,
+} from '../ports/inbound/login.port';
 
 @Injectable()
 export class LoginUseCase implements LoginPort {
@@ -43,7 +46,7 @@ export class LoginUseCase implements LoginPort {
 
     const displayName =
       typeof displayNameClaim === 'string' ? displayNameClaim : null;
-    const user: SessionUser | null = await this.users.upsertByFirebaseUid({
+    const user: User | null = await this.users.upsertByFirebaseUid({
       firebaseUid: decoded.uid,
       email: decoded.email,
       displayName,
@@ -60,21 +63,24 @@ export class LoginUseCase implements LoginPort {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + ttlDays);
 
-    const session = await this.sessions.create({
-      userId: user.id,
-      tokenHash,
-      expiresAt,
-      userAgent: input.userAgent,
-      ipAddress: input.ipAddress,
-    });
+    const session = await this.sessions.create(
+      Session.create({
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+        userAgent: input.userAgent,
+        ipAddress: input.ipAddress,
+      }),
+    );
 
+    const userPrimitives = user.toPrimitives();
     return {
       sessionToken, // el BFF lo pone en cookie httpOnly
       expiresAt: session.expiresAt,
       user: {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
+        id: userPrimitives.id,
+        email: userPrimitives.email,
+        displayName: userPrimitives.displayName,
       },
     };
   }

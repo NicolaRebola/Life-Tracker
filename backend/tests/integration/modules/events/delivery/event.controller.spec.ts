@@ -4,7 +4,7 @@ import type { Server } from 'http';
 import request from 'supertest';
 import { EventController } from 'src/modules/events/delivery/event.controller';
 import { CREATE_EVENT } from 'src/modules/events/application/ports/inbound/create-event.port';
-import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event.errors';
+import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
 import {
   AuthenticatedRequest,
   SessionGuard,

@@ -8,10 +8,7 @@ import {
 import { SESSION_COOKIE_NAME } from 'src/constants';
 import { Request } from 'express';
 import { createHash } from 'crypto';
-import {
-  SESSION_REPOSITORY,
-  type SessionRepositoryPort,
-} from './session-repository.port';
+import { SESSION_REPOSITORY, type SessionRepositoryPort } from '../domain';
 
 export type AuthenticatedRequest = Request & {
   user: {
@@ -45,10 +42,16 @@ export class SessionGuard implements CanActivate {
     if (!session) {
       throw new UnauthorizedException('Invalid or expired session');
     }
+
+    if (!session.id || !session.user) {
+      throw new UnauthorizedException('Invalid session data');
+    }
+
+    const user = session.user.toPrimitives();
     req.user = {
-      id: session.user.id,
-      email: session.user.email,
-      displayName: session.user.displayName,
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
     };
     req.session = {
       id: session.id,

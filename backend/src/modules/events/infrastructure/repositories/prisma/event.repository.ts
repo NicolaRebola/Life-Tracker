@@ -1,19 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
-import {
-  EventRepositoryPort,
-  EventToCreate,
-  TagToCreate,
-} from '../../application/ports/outbound/event-repository.port';
+import type { Event, EventRepositoryPort } from '../../../domain';
+import { EventPrismaMapper } from '../../mappers/prisma/event-prisma.mapper';
 
 @Injectable()
-export class EventRepository implements EventRepositoryPort {
+export class PrismaEventRepository implements EventRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createWithTags(event: EventToCreate, tags: TagToCreate[]) {
-    return this.prisma.$transaction(async (tx) => {
-      const savedEvent = await tx.event.create({ data: event });
+  async save(event: Event): Promise<Event> {
+    const { event: eventData, tags } = EventPrismaMapper.toPersistence(event);
 
+    const savedEvent = await this.prisma.$transaction(async (tx) => {
+      const savedEvent = await tx.event.create({ data: eventData });
       for (const tag of tags) {
         const savedTag = await tx.tag.upsert({
           where: { name: tag.name },
@@ -32,7 +30,7 @@ export class EventRepository implements EventRepositoryPort {
         });
       }
 
-      return tx.event.findUnique({
+      return tx.event.findUniqueOrThrow({
         where: { id: savedEvent.id },
         include: {
           tags: {
@@ -41,5 +39,7 @@ export class EventRepository implements EventRepositoryPort {
         },
       });
     });
+
+    return EventPrismaMapper.toDomain(savedEvent);
   }
 }

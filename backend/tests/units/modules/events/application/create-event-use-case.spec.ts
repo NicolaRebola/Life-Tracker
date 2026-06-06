@@ -1,19 +1,23 @@
-﻿import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event.errors';
-import { CreateEventUseCase } from 'src/modules/events/application/use-cases/create-event-use-case';
-import type {
-  EventRepositoryPort,
-  EventToCreate,
-  TagToCreate,
-} from 'src/modules/events/application/ports/outbound/event-repository.port';
+﻿import { CreateEventUseCase } from 'src/modules/events/application/use-cases/create-event-use-case';
+import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
+import { Event } from 'src/modules/events/domain';
+import type { EventRepositoryPort } from 'src/modules/events/domain';
 
 describe('CreateEventUseCase', () => {
-  let createWithTags: jest.Mock;
+  let save: jest.Mock<Promise<Event>, [Event]>;
   let repository: EventRepositoryPort;
   let useCase: CreateEventUseCase;
 
   beforeEach(() => {
-    createWithTags = jest.fn().mockResolvedValue({ id: 'event-1' });
-    repository = { createWithTags };
+    save = jest.fn((event: Event) =>
+      Promise.resolve(
+        Event.rehydrate({
+          ...event.toPrimitives(),
+          id: 'event-1',
+        }),
+      ),
+    );
+    repository = { save };
     useCase = new CreateEventUseCase(repository);
   });
 
@@ -29,22 +33,20 @@ describe('CreateEventUseCase', () => {
     });
 
     expect(result).toEqual({ id: 'event-1' });
-    expect(createWithTags).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
 
-    const [event, tags] = createWithTags.mock.calls[0] as [
-      EventToCreate,
-      TagToCreate[],
-    ];
+    const event = save.mock.calls[0][0];
+    const props = event.toPrimitives();
 
-    expect(event).toMatchObject({
+    expect(props).toMatchObject({
       name: 'Clase de matematica',
       description: 'Repasar limites',
       notes: 'Llevar cuaderno',
       userId: 'user-1',
     });
-    expect(event.fromDateTime).toEqual(new Date('2026-06-05T08:29:00.000Z'));
-    expect(event.toDateTime).toEqual(new Date('2026-06-05T09:29:00.000Z'));
-    expect(tags).toEqual([
+    expect(props.fromDateTime).toEqual(new Date('2026-06-05T08:29:00.000Z'));
+    expect(props.toDateTime).toEqual(new Date('2026-06-05T09:29:00.000Z'));
+    expect(props.tags).toEqual([
       { name: 'universidad', label: 'universidad' },
       { name: 'analisis', label: 'Analisis' },
     ]);
@@ -58,13 +60,12 @@ describe('CreateEventUseCase', () => {
       name: 'Evento',
     });
 
-    expect(createWithTags).toHaveBeenCalledWith(
-      expect.objectContaining({
-        description: '',
-        notes: '',
-      }),
-      [],
-    );
+    const event = save.mock.calls[0][0];
+    expect(event.toPrimitives()).toMatchObject({
+      description: '',
+      notes: '',
+      tags: [],
+    });
   });
 
   it('rejects commands without user id', async () => {
@@ -79,7 +80,7 @@ describe('CreateEventUseCase', () => {
       fields: ['userId'],
     });
 
-    expect(createWithTags).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it('rejects blank event names', async () => {
@@ -94,7 +95,7 @@ describe('CreateEventUseCase', () => {
       fields: ['name'],
     });
 
-    expect(createWithTags).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it('rejects invalid dates', async () => {
@@ -109,7 +110,7 @@ describe('CreateEventUseCase', () => {
       fields: ['fromDateTime'],
     });
 
-    expect(createWithTags).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it('rejects events where start date is after end date', async () => {
@@ -124,6 +125,6 @@ describe('CreateEventUseCase', () => {
       fields: ['fromDateTime', 'toDateTime'],
     });
 
-    expect(createWithTags).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 });

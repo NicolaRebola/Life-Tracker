@@ -10,6 +10,10 @@ export type CreateEventCommand = {
   tags?: string[];
 };
 
+export type CreateEventResult = {
+  id: string;
+};
+
 export interface CreateEventPort {
-  execute(command: CreateEventCommand): Promise<unknown>;
+  execute(command: CreateEventCommand): Promise<CreateEventResult>;
 }

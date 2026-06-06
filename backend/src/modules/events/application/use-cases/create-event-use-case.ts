@@ -1,12 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EVENT_REPOSITORY } from '../ports/outbound/event-repository.port';
+import {
+  EVENT_REPOSITORY,
+  Event,
+  EventValidationError,
+  Tag,
+} from '../../domain';
+import type { EventRepositoryPort } from '../../domain';
 import type {
-  EventRepositoryPort,
-  EventToCreate,
-  TagToCreate,
-} from '../ports/outbound/event-repository.port';
-import type { CreateEventCommand, CreateEventPort } from '../ports/inbound/create-event.port';
-import { CreateEventValidationError } from '../errors/create-event.errors';
+  CreateEventCommand,
+  CreateEventPort,
+  CreateEventResult,
+} from '../ports/inbound/create-event.port';
+import { CreateEventValidationError } from '../errors/create-event-validation.error';
 
 @Injectable()
 export class CreateEventUseCase implements CreateEventPort {
@@ -15,61 +20,34 @@ export class CreateEventUseCase implements CreateEventPort {
     private readonly eventRepository: EventRepositoryPort,
   ) {}
 
-  async execute(command: CreateEventCommand) {
-    if (!command.userId) {
-      throw new CreateEventValidationError('Usuario no identificado', [
-        'userId',
-      ]);
+  async execute(command: CreateEventCommand): Promise<CreateEventResult> {
+    const event = this.createDomainEvent(command);
+
+    const savedEvent = await this.eventRepository.save(event);
+    if (!savedEvent.id) {
+      throw new Error('Event repository returned an event without id');
     }
 
-    if (!command.name || command.name.trim() === '') {
-      throw new CreateEventValidationError('El nombre es requerido', ['name']);
-    }
-
-    const fromDate = this.parseDate(command.fromDateTime, 'fromDateTime');
-    const toDate = this.parseDate(command.toDateTime, 'toDateTime');
-
-    if (fromDate > toDate) {
-      throw new CreateEventValidationError(
-        'La fecha de inicio debe ser anterior a la fecha de fin',
-        ['fromDateTime', 'toDateTime'],
-      );
-    }
-
-    const event: EventToCreate = {
-      name: command.name.trim(),
-      description: command.description?.trim() ?? '',
-      notes: command.notes?.trim() ?? '',
-      fromDateTime: fromDate,
-      toDateTime: toDate,
-      userId: command.userId,
-    };
-
-    const tags = this.parseTags(command.tags);
-
-    return this.eventRepository.createWithTags(event, tags);
+    return { id: savedEvent.id };
   }
 
-  private parseTags(tags: string[] = []): TagToCreate[] {
-    const tagsByName = new Map<string, TagToCreate>();
+  private createDomainEvent(command: CreateEventCommand): Event {
+    try {
+      return Event.create({
+        userId: command.userId,
+        name: command.name,
+        description: command.description,
+        notes: command.notes,
+        fromDateTime: new Date(command.fromDateTime),
+        toDateTime: new Date(command.toDateTime),
+        tags: Tag.uniqueFromLabels(command.tags),
+      });
+    } catch (error) {
+      if (error instanceof EventValidationError) {
+        throw new CreateEventValidationError(error.message, error.fields);
+      }
 
-    tags.forEach((tag) => {
-      const label = tag.trim();
-      const name = label.toLowerCase();
-
-      if (name) tagsByName.set(name, { name, label });
-    });
-
-    return Array.from(tagsByName.values());
-  }
-
-  private parseDate(dateStr: string, field: string) {
-    const date = new Date(dateStr);
-
-    if (!dateStr || Number.isNaN(date.getTime())) {
-      throw new CreateEventValidationError('Fecha inválida', [field]);
+      throw error;
     }
-
-    return date;
   }
 }

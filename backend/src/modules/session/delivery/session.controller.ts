@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { LOGIN, type LoginPort } from '../application/login.port';
+import { LOGIN, type LoginPort } from '../application/ports/inbound/login.port';
 import { LoginDTO } from './dto/login.dto';
 
 @Controller('session')
