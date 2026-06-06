@@ -14,10 +14,17 @@ describe('CreateEventUseCase', () => {
         Event.rehydrate({
           ...event.toPrimitives(),
           id: 'event-1',
+          status: 'TODO',
         }),
       ),
     );
-    repository = { save };
+    repository = {
+      save,
+      findMany: jest.fn(),
+      searchTagsByName: jest.fn(),
+      findByIdForUser: jest.fn(),
+      applyStatusTransition: jest.fn(),
+    };
     useCase = new CreateEventUseCase(repository);
   });
 
@@ -78,7 +85,7 @@ describe('CreateEventUseCase', () => {
       }),
     ).rejects.toMatchObject<CreateEventValidationError>({
       fields: ['userId'],
-    });
+    } as CreateEventValidationError);
 
     expect(save).not.toHaveBeenCalled();
   });
@@ -93,7 +100,7 @@ describe('CreateEventUseCase', () => {
       }),
     ).rejects.toMatchObject<CreateEventValidationError>({
       fields: ['name'],
-    });
+    } as CreateEventValidationError);
 
     expect(save).not.toHaveBeenCalled();
   });
@@ -108,7 +115,7 @@ describe('CreateEventUseCase', () => {
       }),
     ).rejects.toMatchObject<CreateEventValidationError>({
       fields: ['fromDateTime'],
-    });
+    } as CreateEventValidationError);
 
     expect(save).not.toHaveBeenCalled();
   });
@@ -123,7 +130,7 @@ describe('CreateEventUseCase', () => {
       }),
     ).rejects.toMatchObject<CreateEventValidationError>({
       fields: ['fromDateTime', 'toDateTime'],
-    });
+    } as CreateEventValidationError);
 
     expect(save).not.toHaveBeenCalled();
   });

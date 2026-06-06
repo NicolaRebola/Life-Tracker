@@ -41,6 +41,12 @@ model Session {
   @@map("sessions")
 }
 
+enum EventStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
 model Event {
   id      String    @id @default(uuid())
   fromDateTime   DateTime
@@ -48,11 +54,14 @@ model Event {
   name   String
   description  String
   notes  String @default("")
+  status EventStatus @default(TODO)
   userId   String
 
   user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags EventTag[]
 
+  @@index([userId, status])
+  @@index([userId, fromDateTime])
   @@map("events")
 }
 
