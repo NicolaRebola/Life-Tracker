@@ -4,7 +4,12 @@ import type { Server } from 'http';
 import request from 'supertest';
 import { EventController } from 'src/modules/events/delivery/event.controller';
 import { CREATE_EVENT } from 'src/modules/events/application/ports/inbound/create-event.port';
+import { LIST_EVENTS } from 'src/modules/events/application/ports/inbound/list-events.port';
+import { SEARCH_EVENT_TAGS } from 'src/modules/events/application/ports/inbound/search-event-tags.port';
+import { UPDATE_EVENT_STATUS } from 'src/modules/events/application/ports/inbound/update-event-status.port';
 import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
+import { EventNotFoundError } from 'src/modules/events/application/errors/event-not-found.error';
+import { ListEventsValidationError } from 'src/modules/events/application/errors/list-events-validation.error';
 import {
   AuthenticatedRequest,
   SessionGuard,
@@ -13,10 +18,43 @@ import {
 describe('EventController (integration)', () => {
   let app: INestApplication;
   let createEventUseCase: { execute: jest.Mock };
+  let listEventsUseCase: { execute: jest.Mock };
+  let searchEventTagsUseCase: { execute: jest.Mock };
+  let updateEventStatusUseCase: { execute: jest.Mock };
 
   beforeEach(async () => {
     createEventUseCase = {
       execute: jest.fn().mockResolvedValue({ id: 'event-1' }),
+    };
+    listEventsUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        items: [
+          {
+            id: 'event-1',
+            name: 'Evento',
+            description: 'Descripcion',
+            notes: '',
+            fromDateTime: '2026-06-05T08:29:00.000Z',
+            toDateTime: '2026-06-05T09:29:00.000Z',
+            status: 'TODO',
+            tags: [],
+          },
+        ],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+        },
+      }),
+    };
+    searchEventTagsUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        items: [{ name: 'universidad', label: 'Universidad' }],
+      }),
+    };
+    updateEventStatusUseCase = {
+      execute: jest.fn().mockResolvedValue({ id: 'event-1', status: 'DONE' }),
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -25,6 +63,18 @@ describe('EventController (integration)', () => {
         {
           provide: CREATE_EVENT,
           useValue: createEventUseCase,
+        },
+        {
+          provide: LIST_EVENTS,
+          useValue: listEventsUseCase,
+        },
+        {
+          provide: SEARCH_EVENT_TAGS,
+          useValue: searchEventTagsUseCase,
+        },
+        {
+          provide: UPDATE_EVENT_STATUS,
+          useValue: updateEventStatusUseCase,
         },
       ],
     })
@@ -71,6 +121,97 @@ describe('EventController (integration)', () => {
       userId: 'user-1',
       ...payload,
     });
+  });
+
+  it('lists events for the authenticated user with query params', async () => {
+    await request(app.getHttpServer() as Server)
+      .get('/events')
+      .query({
+        name: 'clase',
+        status: 'TODO',
+        tags: 'universidad,analisis',
+        page: '2',
+        limit: '5',
+      })
+      .expect(200)
+      .expect(
+        ({
+          body,
+        }: {
+          body: {
+            items: unknown[];
+            pagination: { total: number };
+          };
+        }) => {
+          expect(body.items).toHaveLength(1);
+          expect(body.pagination.total).toBe(1);
+        },
+      );
+
+    expect(listEventsUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'clase',
+      status: 'TODO',
+      tags: ['universidad', 'analisis'],
+      page: 2,
+      limit: 5,
+    });
+  });
+
+  it('maps list validation errors to bad request responses', async () => {
+    listEventsUseCase.execute.mockRejectedValueOnce(
+      new ListEventsValidationError('Límite inválido', ['limit']),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .get('/events')
+      .query({ limit: '15' })
+      .expect(400)
+      .expect(({ body }: { body: { message: string; fields: string[] } }) => {
+        expect(body.message).toBe('Límite inválido');
+        expect(body.fields).toEqual(['limit']);
+      });
+  });
+
+  it('searches event tags for the authenticated user', async () => {
+    await request(app.getHttpServer() as Server)
+      .get('/events/tags')
+      .query({ name: 'uni', limit: '10' })
+      .expect(200)
+      .expect({
+        items: [{ name: 'universidad', label: 'Universidad' }],
+      });
+
+    expect(searchEventTagsUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'uni',
+      limit: 10,
+    });
+  });
+
+  it('updates event status for the authenticated user', async () => {
+    await request(app.getHttpServer() as Server)
+      .patch('/events/event-1/status')
+      .send({ status: 'DONE' })
+      .expect(200)
+      .expect({ event: { id: 'event-1', status: 'DONE' } });
+
+    expect(updateEventStatusUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      status: 'DONE',
+    });
+  });
+
+  it('maps not found errors when updating status', async () => {
+    updateEventStatusUseCase.execute.mockRejectedValueOnce(
+      new EventNotFoundError(),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/missing-event/status')
+      .send({ status: 'DONE' })
+      .expect(404);
   });
 
   it('maps use case validation errors to bad request responses', async () => {
