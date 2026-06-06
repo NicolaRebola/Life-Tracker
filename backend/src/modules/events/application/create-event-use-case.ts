@@ -1,7 +1,11 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { EVENT_REPOSITORY, EventToCreate, TagToCreate } from "./event-repository.port";
-import type { EventRepositoryPort } from "./event-repository.port";
-import { CreateEventValidationError } from "./create-event.errors";
+import { Inject, Injectable } from '@nestjs/common';
+import { EVENT_REPOSITORY } from './event-repository.port';
+import type {
+  EventRepositoryPort,
+  EventToCreate,
+  TagToCreate,
+} from './event-repository.port';
+import { CreateEventValidationError } from './create-event.errors';
 
 export type CreateEventCommand = {
   userId: string;
@@ -22,34 +26,36 @@ export class CreateEventUseCase {
 
   async execute(command: CreateEventCommand) {
     if (!command.userId) {
-      throw new CreateEventValidationError("Usuario no identificado", ["userId"]);
+      throw new CreateEventValidationError('Usuario no identificado', [
+        'userId',
+      ]);
     }
 
-    if (!command.name || command.name.trim() === "") {
-      throw new CreateEventValidationError("El nombre es requerido", ["name"]);
+    if (!command.name || command.name.trim() === '') {
+      throw new CreateEventValidationError('El nombre es requerido', ['name']);
     }
-    
-    const fromDate = this.parseDate(command.fromDateTime, "fromDateTime");
-    const toDate = this.parseDate(command.toDateTime, "toDateTime");
+
+    const fromDate = this.parseDate(command.fromDateTime, 'fromDateTime');
+    const toDate = this.parseDate(command.toDateTime, 'toDateTime');
 
     if (fromDate > toDate) {
       throw new CreateEventValidationError(
-        "La fecha de inicio debe ser anterior a la fecha de fin",
-        ["fromDateTime", "toDateTime"],
+        'La fecha de inicio debe ser anterior a la fecha de fin',
+        ['fromDateTime', 'toDateTime'],
       );
     }
 
     const event: EventToCreate = {
       name: command.name.trim(),
-      description: command.description?.trim() ?? "",
-      notes: command.notes?.trim() ?? "",
+      description: command.description?.trim() ?? '',
+      notes: command.notes?.trim() ?? '',
       fromDateTime: fromDate,
       toDateTime: toDate,
       userId: command.userId,
     };
-    
+
     const tags = this.parseTags(command.tags);
-    
+
     return this.eventRepository.createWithTags(event, tags);
   }
 
@@ -70,7 +76,7 @@ export class CreateEventUseCase {
     const date = new Date(dateStr);
 
     if (!dateStr || Number.isNaN(date.getTime())) {
-      throw new CreateEventValidationError("Fecha inválida", [field]);
+      throw new CreateEventValidationError('Fecha inválida', [field]);
     }
 
     return date;

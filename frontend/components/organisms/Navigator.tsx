@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { Avatar } from "../tailgrids/core/avatar";
 import { Button } from "../tailgrids/core/button";
 import { useRouter, usePathname } from "next/navigation";

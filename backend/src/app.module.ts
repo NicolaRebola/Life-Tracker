@@ -8,7 +8,13 @@ import { FirebaseModule } from './shared/firebase/firebase.module';
 import { EventModule } from './modules/events/events.module';
 
 @Module({
-  imports: [HealthModule, PrismaModule, SessionModule, FirebaseModule, EventModule],
+  imports: [
+    HealthModule,
+    PrismaModule,
+    SessionModule,
+    FirebaseModule,
+    EventModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

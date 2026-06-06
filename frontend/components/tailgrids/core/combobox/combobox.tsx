@@ -188,7 +188,7 @@ export function ComboboxContent({
 
 // Combobox List (ListBox)
 
-export interface ComboboxListProps<T extends object> extends ListBoxProps<T> {}
+export type ComboboxListProps<T extends object> = ListBoxProps<T>;
 
 export function ComboboxList<T extends object>({
   className,

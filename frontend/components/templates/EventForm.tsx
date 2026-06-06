@@ -51,8 +51,10 @@ export default function EventForm({ onSuccess }: EventFormProps) {
       await createEvent(values);
       setValues({...initialValues});
       showToast({variant: 'success', message: 'Evento agregado!'}, { closeOnSuccess: true })
-    } catch(err: any) {
-      showToast({variant: 'error', message: err.message ?? 'No se pudo crear el evento'});
+    } catch(err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'No se pudo crear el evento';
+      showToast({variant: 'error', message});
     } finally {
       setIsSubmitting(false);
     }

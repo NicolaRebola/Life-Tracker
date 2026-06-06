@@ -11,6 +11,6 @@ import { SessionGuard } from './application/session.guard';
   imports: [PrismaModule, FirebaseModule],
   controllers: [SessionController],
   providers: [LoginUseCase, UserRepository, SessionRepository, SessionGuard],
-  exports: [SessionGuard, SessionRepository]
+  exports: [SessionGuard, SessionRepository],
 })
 export class SessionModule {}

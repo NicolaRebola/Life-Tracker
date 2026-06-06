@@ -1,8 +1,13 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { SessionRepository } from "../infrastructure/session.repository";
-import { SESSION_COOKIE_NAME } from "src/constants";
-import { Request } from "express";
-import { createHash } from "crypto";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { SessionRepository } from '../infrastructure/session.repository';
+import { SESSION_COOKIE_NAME } from 'src/constants';
+import { Request } from 'express';
+import { createHash } from 'crypto';
 
 export type AuthenticatedRequest = Request & {
   user: {
@@ -22,15 +27,16 @@ export class SessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
-    const sessionToken = req.cookies?.[SESSION_COOKIE_NAME];
+    const cookies = req.cookies as Record<string, string> | undefined;
+    const sessionToken: string | null = cookies?.[SESSION_COOKIE_NAME] ?? null;
 
-    if (!sessionToken) throw new UnauthorizedException("Missing session token");
+    if (!sessionToken) throw new UnauthorizedException('Missing session token');
 
-    const tokenHash = createHash("sha256").update(sessionToken).digest("hex");
+    const tokenHash = createHash('sha256').update(sessionToken).digest('hex');
     const session = await this.sessions.findActiveByTokenHash(tokenHash);
 
     if (!session) {
-      throw new UnauthorizedException("Invalid or expired session");
+      throw new UnauthorizedException('Invalid or expired session');
     }
     req.user = {
       id: session.user.id,

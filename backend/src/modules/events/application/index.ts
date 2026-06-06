@@ -1,5 +1,3 @@
-import { CreateEventUseCase } from "./create-event-use-case";
+import { CreateEventUseCase } from './create-event-use-case';
 
-export const USE_CASES = [
-  CreateEventUseCase
-];
+export const USE_CASES = [CreateEventUseCase];

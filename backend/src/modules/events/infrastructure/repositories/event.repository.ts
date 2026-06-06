@@ -12,7 +12,7 @@ export class EventRepository implements EventRepositoryPort {
 
   async createWithTags(event: EventToCreate, tags: TagToCreate[]) {
     return this.prisma.$transaction(async (tx) => {
-      const savedEvent = await tx.event.create({data: event});
+      const savedEvent = await tx.event.create({ data: event });
 
       for (const tag of tags) {
         const savedTag = await tx.tag.upsert({
@@ -22,7 +22,7 @@ export class EventRepository implements EventRepositoryPort {
             name: tag.name,
             label: tag.label,
           },
-        })
+        });
 
         await tx.eventTag.create({
           data: {
@@ -33,13 +33,13 @@ export class EventRepository implements EventRepositoryPort {
       }
 
       return tx.event.findUnique({
-        where: {id: savedEvent.id},
+        where: { id: savedEvent.id },
         include: {
           tags: {
-            include: {tag: true}
-          }
-        }
-      })
-    })
+            include: { tag: true },
+          },
+        },
+      });
+    });
   }
 }

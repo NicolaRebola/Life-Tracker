@@ -1,5 +1,3 @@
-import { EventRepository } from "./event.repository";
+import { EventRepository } from './event.repository';
 
-export const REPOSITORIES = [
-  EventRepository,
-]
+export const REPOSITORIES = [EventRepository];

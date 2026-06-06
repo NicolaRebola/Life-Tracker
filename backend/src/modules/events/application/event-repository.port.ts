@@ -1,4 +1,4 @@
-export const EVENT_REPOSITORY = Symbol("EVENT_REPOSITORY");
+export const EVENT_REPOSITORY = Symbol('EVENT_REPOSITORY');
 
 export type EventToCreate = {
   name: string;

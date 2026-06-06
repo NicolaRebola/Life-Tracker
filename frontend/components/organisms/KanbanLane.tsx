@@ -1,5 +1,3 @@
-import EventCard from "../molecules/EventCard";
-
 export type KanbanLaneProps = {
   status: string;
 }

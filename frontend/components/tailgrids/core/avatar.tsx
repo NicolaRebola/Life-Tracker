@@ -1,5 +1,6 @@
 import { cn } from "@/utils/cn";
 import { cva, type VariantProps } from "class-variance-authority";
+import Image from "next/image";
 
 const groupStyles = cva("flex items-center", {
   variants: {
@@ -59,10 +60,13 @@ export function Avatar({
     <figure className={cn(groupStyles({ size }), className)} style={style}>
       <div className={avatarStyles({ size })}>
         {src ? (
-          <img
+          <Image
             src={src}
+            fill
+            sizes="64px"
+            unoptimized
             className="size-full aspect-square rounded-full object-cover"
-            alt={alt}
+            alt={alt ?? fallback}
           />
         ) : (
           <span className="uppercase">{fallback}</span>

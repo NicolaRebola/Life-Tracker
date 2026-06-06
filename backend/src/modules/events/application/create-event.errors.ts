@@ -4,6 +4,6 @@ export class CreateEventValidationError extends Error {
     public readonly fields: string[] = [],
   ) {
     super(message);
-    this.name = "CreateEventValidationError";
+    this.name = 'CreateEventValidationError';
   }
 }
