@@ -17,6 +17,7 @@ type EventCardProps = {
   onDragStart?: (eventId: string) => void;
   onDragEnd?: () => void;
   onStatusChange?: (eventId: string, status: EventStatus) => void;
+  onEdit?: (event: EventListItem) => void;
 };
 
 const STATUS_OPTIONS: EventStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
@@ -50,6 +51,7 @@ export default function EventCard({
   onDragStart,
   onDragEnd,
   onStatusChange,
+  onEdit,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -128,11 +130,14 @@ export default function EventCard({
               </button>
               <button
                 type="button"
-                disabled
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-400"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                onClick={() => {
+                  onEdit?.(event);
+                  setIsMenuOpen(false);
+                }}
               >
                 <PencilIcon />
-                Anotar
+                Editar
               </button>
             </div>
           )}

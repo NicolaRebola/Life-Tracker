@@ -2,11 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createEvent,
   CreateEventError,
+  eventListItemToFormValues,
   listEvents,
   searchEventTags,
+  updateEvent,
+  UpdateEventError,
   updateEventStatus,
   EventsApiError,
   type EventFormValues,
+  type EventListItem,
 } from "./events-api";
 
 const formValues: EventFormValues = {
@@ -137,6 +141,95 @@ describe("listEvents", () => {
       message: "Vuelve a iniciar sesión",
       status: 401,
     });
+  });
+});
+
+describe("updateEvent", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends a normalized payload to the events BFF route", async () => {
+    const responseBody = {
+      event: {
+        id: "event-1",
+        name: "Evento editado",
+        description: "Descripcion",
+        notes: "Nota",
+        fromDateTime: "2026-06-06T10:00:00.000Z",
+        toDateTime: "2026-06-06T11:00:00.000Z",
+        status: "TODO",
+        tags: [{ name: "universidad", label: "Universidad" }],
+      },
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => responseBody,
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(updateEvent("event-1", formValues)).resolves.toEqual(responseBody);
+    expect(fetchMock).toHaveBeenCalledWith("/api/events/event-1", {
+      method: "PATCH",
+      body: JSON.stringify({
+        fromDateTime: "2026-06-05T08:29",
+        toDateTime: "2026-06-05T09:29",
+        name: "Evento de prueba",
+        description: "Descripcion",
+        notes: "Nota",
+        tags: ["universidad", "analisis", "universidad"],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("throws an UpdateEventError when the BFF rejects the request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({
+          message: "Evento no encontrado",
+        }),
+      }),
+    );
+
+    await expect(updateEvent("missing-event", formValues)).rejects.toMatchObject<UpdateEventError>({
+      name: "UpdateEventError",
+      message: "Evento no encontrado",
+      status: 404,
+    });
+  });
+});
+
+describe("eventListItemToFormValues", () => {
+  it("maps list items to datetime-local form values and tag labels", () => {
+    const event: EventListItem = {
+      id: "event-1",
+      name: "Evento",
+      description: "Descripcion",
+      notes: "Nota",
+      fromDateTime: "2026-06-05T11:29:00.000Z",
+      toDateTime: "2026-06-05T12:29:00.000Z",
+      status: "TODO",
+      tags: [
+        { name: "universidad", label: "Universidad" },
+        { name: "analisis", label: "Analisis" },
+      ],
+    };
+
+    const values = eventListItemToFormValues(event);
+
+    expect(values.name).toBe("Evento");
+    expect(values.description).toBe("Descripcion");
+    expect(values.notes).toBe("Nota");
+    expect(values.tags).toBe("Universidad, Analisis");
+    expect(values.fromDateTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    expect(values.toDateTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
   });
 });
 
