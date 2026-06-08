@@ -37,12 +37,14 @@ const TRANSIENT_RESEND_ERRORS = new Set([
 
 @Injectable()
 export class ResendMessageAdapter implements MessageChannelAdapter {
-  private readonly client: ResendEmailClient;
+  private readonly client: ResendEmailClient | null;
   private readonly fromEmail: string;
 
   constructor() {
-    this.client = new Resend(process.env.RESEND_API_KEY);
     this.fromEmail = process.env.RESEND_FROM_EMAIL ?? '';
+    this.client = process.env.RESEND_API_KEY
+      ? new Resend(process.env.RESEND_API_KEY)
+      : null;
   }
 
   static createWithClient(
@@ -75,6 +77,13 @@ export class ResendMessageAdapter implements MessageChannelAdapter {
       return this.permanentFailure(
         'missing_from_email',
         'RESEND_FROM_EMAIL is not configured',
+      );
+    }
+
+    if (!this.client) {
+      return this.permanentFailure(
+        'missing_api_key',
+        'RESEND_API_KEY is not configured',
       );
     }
 
