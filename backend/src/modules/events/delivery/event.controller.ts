@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpException,
@@ -14,11 +15,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CREATE_EVENT } from '../application/ports/inbound/create-event.port';
+import { DELETE_EVENT } from '../application/ports/inbound/delete-event.port';
 import { LIST_EVENTS } from '../application/ports/inbound/list-events.port';
 import { SEARCH_EVENT_TAGS } from '../application/ports/inbound/search-event-tags.port';
 import { UPDATE_EVENT_STATUS } from '../application/ports/inbound/update-event-status.port';
 import { UPDATE_EVENT } from '../application/ports/inbound/update-event.port';
 import { CreateEventValidationError } from '../application/errors/create-event-validation.error';
+import { DeleteEventValidationError } from '../application/errors/delete-event-validation.error';
 import { EventNotFoundError } from '../application/errors/event-not-found.error';
 import { ListEventsValidationError } from '../application/errors/list-events-validation.error';
 import { UpdateEventStatusConflictError } from '../application/errors/update-event-status-conflict.error';
@@ -27,6 +30,7 @@ import { UpdateEventValidationError } from '../application/errors/update-event-v
 import { SessionGuard } from 'src/modules/session/application/session.guard';
 import type { AuthenticatedRequest } from 'src/modules/session/application/session.guard';
 import type { CreateEventPort } from '../application/ports/inbound/create-event.port';
+import type { DeleteEventPort } from '../application/ports/inbound/delete-event.port';
 import type { ListEventsPort } from '../application/ports/inbound/list-events.port';
 import type { SearchEventTagsPort } from '../application/ports/inbound/search-event-tags.port';
 import type { UpdateEventStatusPort } from '../application/ports/inbound/update-event-status.port';
@@ -43,6 +47,8 @@ export class EventController {
   constructor(
     @Inject(CREATE_EVENT)
     private readonly createEventUseCase: CreateEventPort,
+    @Inject(DELETE_EVENT)
+    private readonly deleteEventUseCase: DeleteEventPort,
     @Inject(LIST_EVENTS)
     private readonly listEventsUseCase: ListEventsPort,
     @Inject(SEARCH_EVENT_TAGS)
@@ -207,6 +213,36 @@ export class EventController {
       return { event };
     } catch (error) {
       if (error instanceof UpdateEventValidationError) {
+        throw new HttpException(
+          { message: error.message, fields: error.fields },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof EventNotFoundError) {
+        throw new HttpException(
+          { message: error.message },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteEvent(
+    @Param('id') eventId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      await this.deleteEventUseCase.execute({
+        userId: req.user.id,
+        eventId,
+      });
+    } catch (error) {
+      if (error instanceof DeleteEventValidationError) {
         throw new HttpException(
           { message: error.message, fields: error.fields },
           HttpStatus.BAD_REQUEST,
