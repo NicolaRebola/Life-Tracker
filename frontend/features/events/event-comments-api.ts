@@ -3,12 +3,14 @@ import { EventsApiError } from './events-api';
 export type EventCommentItem = {
   id: string;
   eventId: string;
-  userId: string;
+  userId: string | null;
+  participantId: string | null;
   body: string;
   createdAt: string;
   updatedAt: string;
   isOwn: boolean;
   author: {
+    kind: 'USER' | 'PARTICIPANT';
     id: string;
     displayName: string | null;
     email: string;

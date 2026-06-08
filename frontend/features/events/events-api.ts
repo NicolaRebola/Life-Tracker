@@ -28,6 +28,13 @@ export type EventListItem = {
   status: EventStatus;
   tags: Array<{ name: string; label: string }>;
   commentCount: number;
+  participantCount: number;
+  creator: {
+    id: string;
+    displayName: string | null;
+    email: string;
+  };
+  isCreator: boolean;
 };
 
 export type ListEventsFilters = {
