@@ -56,12 +56,14 @@ model Event {
   notes  String @default("")
   status EventStatus @default(TODO)
   userId   String
+  deletedAt DateTime? @map("deleted_at")
 
   user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags EventTag[]
 
   @@index([userId, status])
   @@index([userId, fromDateTime])
+  @@index([deletedAt])
   @@map("events")
 }
 
