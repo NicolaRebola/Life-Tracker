@@ -14,6 +14,7 @@ describe('SearchEventTagsUseCase', () => {
     ]);
     repository = {
       save: jest.fn(),
+      update: jest.fn(),
       findMany: jest.fn(),
       searchTagsByName,
       findByIdForUser: jest.fn(),
@@ -58,7 +59,7 @@ describe('SearchEventTagsUseCase', () => {
       }),
     ).rejects.toMatchObject<ListEventsValidationError>({
       fields: ['limit'],
-    });
+    } as ListEventsValidationError);
 
     expect(searchTagsByName).not.toHaveBeenCalled();
   });

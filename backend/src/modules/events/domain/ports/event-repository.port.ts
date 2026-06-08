@@ -36,6 +36,7 @@ export type EventStatusTransitionWriteResult = {
 
 export interface EventRepositoryPort {
   save(event: Event): Promise<Event>;
+  update(event: Event): Promise<Event>;
   findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents>;
   findByIdForUser(userId: string, eventId: string): Promise<Event | null>;
   searchTagsByName(

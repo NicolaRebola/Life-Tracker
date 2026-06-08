@@ -61,6 +61,34 @@ export class Event {
     return new Event(props);
   }
 
+  updateDetails(props: {
+    name: string;
+    description?: string;
+    notes?: string;
+    fromDateTime: Date;
+    toDateTime: Date;
+    tags?: Tag[];
+  }): Event {
+    Event.assertValid({
+      userId: this.props.userId,
+      name: props.name,
+      description: props.description,
+      notes: props.notes,
+      fromDateTime: props.fromDateTime,
+      toDateTime: props.toDateTime,
+    });
+
+    return new Event({
+      ...this.props,
+      name: props.name.trim(),
+      description: props.description?.trim() ?? '',
+      notes: props.notes?.trim() ?? '',
+      fromDateTime: props.fromDateTime,
+      toDateTime: props.toDateTime,
+      tags: props.tags?.map((tag) => tag.toPrimitives()) ?? [],
+    });
+  }
+
   transitionTo(status: EventStatus): {
     event: Event;
     transition: EventStatusTransition;

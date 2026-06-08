@@ -25,6 +25,7 @@ type ToastState = {
 
 type KanbanBoardProps = {
   refreshKey?: number;
+  onEditEvent?: (event: EventListItem) => void;
 };
 
 const defaultFilters: Required<Pick<ListEventsFilters, "name" | "status" | "tags">> & {
@@ -38,7 +39,7 @@ const defaultFilters: Required<Pick<ListEventsFilters, "name" | "status" | "tags
   limit: 10,
 };
 
-export default function KanbanBoard({ refreshKey = 0 }: KanbanBoardProps) {
+export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoardProps) {
   const [filters, setFilters] = useState(defaultFilters);
   const [mobileLane, setMobileLane] = useState<EventStatus>("TODO");
   const [items, setItems] = useState<EventListItem[]>([]);
@@ -201,6 +202,7 @@ export default function KanbanBoard({ refreshKey = 0 }: KanbanBoardProps) {
               status={mobileLane}
               events={eventsByStatus[mobileLane]}
               onStatusChange={handleStatusChange}
+              onEditEvent={onEditEvent}
             />
           </div>
 
@@ -216,6 +218,7 @@ export default function KanbanBoard({ refreshKey = 0 }: KanbanBoardProps) {
                 onDragEnd={() => setDraggedEventId(null)}
                 onDrop={handleDrop}
                 onStatusChange={handleStatusChange}
+                onEditEvent={onEditEvent}
               />
             ))}
           </div>

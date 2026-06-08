@@ -7,11 +7,13 @@ import { CREATE_EVENT } from 'src/modules/events/application/ports/inbound/creat
 import { LIST_EVENTS } from 'src/modules/events/application/ports/inbound/list-events.port';
 import { SEARCH_EVENT_TAGS } from 'src/modules/events/application/ports/inbound/search-event-tags.port';
 import { UPDATE_EVENT_STATUS } from 'src/modules/events/application/ports/inbound/update-event-status.port';
+import { UPDATE_EVENT } from 'src/modules/events/application/ports/inbound/update-event.port';
 import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
 import { EventNotFoundError } from 'src/modules/events/application/errors/event-not-found.error';
 import { ListEventsValidationError } from 'src/modules/events/application/errors/list-events-validation.error';
 import { UpdateEventStatusConflictError } from 'src/modules/events/application/errors/update-event-status-conflict.error';
 import { UpdateEventStatusValidationError } from 'src/modules/events/application/errors/update-event-status-validation.error';
+import { UpdateEventValidationError } from 'src/modules/events/application/errors/update-event-validation.error';
 import {
   AuthenticatedRequest,
   SessionGuard,
@@ -23,6 +25,7 @@ describe('EventController (integration)', () => {
   let listEventsUseCase: { execute: jest.Mock };
   let searchEventTagsUseCase: { execute: jest.Mock };
   let updateEventStatusUseCase: { execute: jest.Mock };
+  let updateEventUseCase: { execute: jest.Mock };
 
   beforeEach(async () => {
     createEventUseCase = {
@@ -58,6 +61,18 @@ describe('EventController (integration)', () => {
     updateEventStatusUseCase = {
       execute: jest.fn().mockResolvedValue({ id: 'event-1', status: 'DONE' }),
     };
+    updateEventUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        id: 'event-1',
+        name: 'Evento editado',
+        description: 'Descripcion editada',
+        notes: 'Notas editadas',
+        fromDateTime: '2026-06-06T10:00:00.000Z',
+        toDateTime: '2026-06-06T11:00:00.000Z',
+        status: 'TODO',
+        tags: [{ name: 'universidad', label: 'Universidad' }],
+      }),
+    };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [EventController],
@@ -77,6 +92,10 @@ describe('EventController (integration)', () => {
         {
           provide: UPDATE_EVENT_STATUS,
           useValue: updateEventStatusUseCase,
+        },
+        {
+          provide: UPDATE_EVENT,
+          useValue: updateEventUseCase,
         },
       ],
     })
@@ -279,6 +298,72 @@ describe('EventController (integration)', () => {
       .send({
         fromDateTime: '2026-06-05T08:29:00.000Z',
         toDateTime: '2026-06-05T09:29:00.000Z',
+        name: '',
+      })
+      .expect(400)
+      .expect(({ body }: { body: { message: string; fields: string[] } }) => {
+        expect(body.message).toBe('El nombre es requerido');
+        expect(body.fields).toEqual(['name']);
+      });
+  });
+
+  it('updates an event for the authenticated user', async () => {
+    const payload = {
+      fromDateTime: '2026-06-06T10:00:00.000Z',
+      toDateTime: '2026-06-06T11:00:00.000Z',
+      name: 'Evento editado',
+      description: 'Descripcion editada',
+      notes: 'Notas editadas',
+      tags: ['universidad'],
+    };
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/event-1')
+      .send(payload)
+      .expect(200)
+      .expect({
+        event: {
+          id: 'event-1',
+          name: 'Evento editado',
+          description: 'Descripcion editada',
+          notes: 'Notas editadas',
+          fromDateTime: '2026-06-06T10:00:00.000Z',
+          toDateTime: '2026-06-06T11:00:00.000Z',
+          status: 'TODO',
+          tags: [{ name: 'universidad', label: 'Universidad' }],
+        },
+      });
+
+    expect(updateEventUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      ...payload,
+    });
+  });
+
+  it('maps not found errors when updating an event', async () => {
+    updateEventUseCase.execute.mockRejectedValueOnce(new EventNotFoundError());
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/missing-event')
+      .send({
+        fromDateTime: '2026-06-06T10:00:00.000Z',
+        toDateTime: '2026-06-06T11:00:00.000Z',
+        name: 'Evento editado',
+      })
+      .expect(404);
+  });
+
+  it('maps update validation errors to bad request responses', async () => {
+    updateEventUseCase.execute.mockRejectedValueOnce(
+      new UpdateEventValidationError('El nombre es requerido', ['name']),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .patch('/events/event-1')
+      .send({
+        fromDateTime: '2026-06-06T10:00:00.000Z',
+        toDateTime: '2026-06-06T11:00:00.000Z',
         name: '',
       })
       .expect(400)

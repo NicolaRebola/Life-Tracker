@@ -80,6 +80,46 @@ export class CreateEventError extends EventsApiError {
   }
 }
 
+export class UpdateEventError extends EventsApiError {
+  constructor(
+    message: string,
+    status: number,
+    fields?: string[],
+  ) {
+    super(message, status, fields);
+    this.name = 'UpdateEventError';
+  }
+}
+
+function buildEventPayload(values: EventFormValues): CreateEventPayload {
+  return {
+    fromDateTime: values.fromDateTime,
+    toDateTime: values.toDateTime,
+    name: values.name.trim(),
+    description: values.description.trim(),
+    notes: values.notes.trim(),
+    tags: values.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+  };
+}
+
+function toDateTimeLocalValue(isoString: string) {
+  const date = new Date(isoString);
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function eventListItemToFormValues(event: EventListItem): EventFormValues {
+  return {
+    fromDateTime: toDateTimeLocalValue(event.fromDateTime),
+    toDateTime: toDateTimeLocalValue(event.toDateTime),
+    name: event.name,
+    description: event.description,
+    notes: event.notes,
+    tags: event.tags.map((tag) => tag.label).join(', '),
+  };
+}
+
 function buildListEventsQuery(filters: ListEventsFilters = {}) {
   const params = new URLSearchParams();
 
@@ -111,14 +151,7 @@ async function parseErrorResponse(res: Response, fallbackMessage: string) {
 }
 
 export async function createEvent(values: EventFormValues) {
-  const payload: CreateEventPayload = {
-    fromDateTime: values.fromDateTime,
-    toDateTime: values.toDateTime,
-    name: values.name.trim(),
-    description: values.description.trim(),
-    notes: values.notes.trim(),
-    tags: values.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
-  };
+  const payload = buildEventPayload(values);
 
   const res = await fetch('/api/events', {
     method: 'POST',
@@ -132,6 +165,29 @@ export async function createEvent(values: EventFormValues) {
     const responseError = await res.json().catch(() => null);
     throw new CreateEventError(
       responseError?.message ?? 'No se pudo crear el evento',
+      res.status,
+      responseError?.fields,
+    );
+  }
+
+  return res.json();
+}
+
+export async function updateEvent(eventId: string, values: EventFormValues) {
+  const payload = buildEventPayload(values);
+
+  const res = await fetch(`/api/events/${eventId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const responseError = await res.json().catch(() => null);
+    throw new UpdateEventError(
+      responseError?.message ?? 'No se pudo actualizar el evento',
       res.status,
       responseError?.fields,
     );

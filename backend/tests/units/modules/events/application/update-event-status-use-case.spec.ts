@@ -37,6 +37,7 @@ describe('UpdateEventStatusUseCase', () => {
     });
     repository = {
       save: jest.fn(),
+      update: jest.fn(),
       findMany: jest.fn(),
       searchTagsByName: jest.fn(),
       findByIdForUser,
@@ -138,7 +139,7 @@ describe('UpdateEventStatusUseCase', () => {
       }),
     ).rejects.toMatchObject<UpdateEventStatusValidationError>({
       fields: ['status'],
-    });
+    } as UpdateEventStatusValidationError);
 
     expect(applyStatusTransition).not.toHaveBeenCalled();
   });
@@ -154,7 +155,7 @@ describe('UpdateEventStatusUseCase', () => {
       }),
     ).rejects.toMatchObject<UpdateEventStatusValidationError>({
       fields: ['status'],
-    });
+    } as UpdateEventStatusValidationError);
 
     expect(applyStatusTransition).not.toHaveBeenCalled();
   });
@@ -193,7 +194,7 @@ describe('UpdateEventStatusUseCase', () => {
       }),
     ).rejects.toMatchObject<UpdateEventStatusValidationError>({
       fields: ['status'],
-    });
+    } as UpdateEventStatusValidationError);
 
     expect(findByIdForUser).not.toHaveBeenCalled();
     expect(applyStatusTransition).not.toHaveBeenCalled();
