@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import EventForm from "@/components/templates/EventForm";
+import { useEffect, useState } from "react";
+import EventForm from "@/components/organisms/EventForm";
 import { buttonStyles } from "@/components/tailgrids/core/button";
 import {
   Sheet,
@@ -16,6 +16,26 @@ type AddEventSheetProps = {
 
 export default function AddEventSheet({ onEventCreated }: AddEventSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(min-width: 768px)").matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (query: MediaQueryListEvent) => {
+      setIsDesktop(query.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  function handleSuccess() {
+    setIsOpen(false);
+    onEventCreated?.();
+  }
 
   return (
     <Sheet isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -29,21 +49,11 @@ export default function AddEventSheet({ onEventCreated }: AddEventSheetProps) {
       </SheetTrigger>
 
       <SheetOverlay>
-        <SheetContent side="bottom" className="md:hidden">
-          <EventForm
-            onSuccess={() => {
-              setIsOpen(false);
-              onEventCreated?.();
-            }}
-          />
-        </SheetContent>
-        <SheetContent side="right" className="hidden md:flex">
-          <EventForm
-            onSuccess={() => {
-              setIsOpen(false);
-              onEventCreated?.();
-            }}
-          />
+        <SheetContent
+          side={isDesktop ? "right" : "bottom"}
+          className={isDesktop ? "h-full max-w-sm" : "max-h-[85vh]"}
+        >
+          <EventForm onSuccess={handleSuccess} />
         </SheetContent>
       </SheetOverlay>
     </Sheet>

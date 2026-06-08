@@ -1,6 +1,7 @@
 "use client";
 
-import EventForm from "@/components/templates/EventForm";
+import { useEffect, useState } from "react";
+import EventForm from "@/components/organisms/EventForm";
 import {
   Sheet,
   SheetContent,
@@ -24,37 +25,46 @@ export default function EditEventSheet({
   onOpenChange,
   onEventUpdated,
 }: EditEventSheetProps) {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(min-width: 768px)").matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (query: MediaQueryListEvent) => {
+      setIsDesktop(query.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   if (!event) {
     return null;
   }
 
   const initialValues = eventListItemToFormValues(event);
 
+  function handleSuccess() {
+    onOpenChange(false);
+    onEventUpdated?.();
+  }
+
   return (
     <Sheet isOpen={isOpen} onOpenChange={onOpenChange}>
       <SheetOverlay>
-        <SheetContent side="bottom" className="md:hidden">
+        <SheetContent
+          side={isDesktop ? "right" : "bottom"}
+          className={isDesktop ? "h-full max-w-sm" : "max-h-[85vh]"}
+        >
           <EventForm
             key={event.id}
             mode="edit"
             eventId={event.id}
             initialValues={initialValues}
-            onSuccess={() => {
-              onOpenChange(false);
-              onEventUpdated?.();
-            }}
-          />
-        </SheetContent>
-        <SheetContent side="right" className="hidden md:flex">
-          <EventForm
-            key={event.id}
-            mode="edit"
-            eventId={event.id}
-            initialValues={initialValues}
-            onSuccess={() => {
-              onOpenChange(false);
-              onEventUpdated?.();
-            }}
+            onSuccess={handleSuccess}
           />
         </SheetContent>
       </SheetOverlay>
