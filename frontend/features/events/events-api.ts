@@ -27,6 +27,7 @@ export type EventListItem = {
   toDateTime: string;
   status: EventStatus;
   tags: Array<{ name: string; label: string }>;
+  commentCount: number;
 };
 
 export type ListEventsFilters = {

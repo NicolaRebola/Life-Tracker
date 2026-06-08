@@ -12,8 +12,13 @@ export type ListEventsCriteria = {
   limit: number;
 };
 
+export type PaginatedEventItem = {
+  event: Event;
+  commentCount: number;
+};
+
 export type PaginatedEvents = {
-  items: Event[];
+  items: PaginatedEventItem[];
   total: number;
 };
 

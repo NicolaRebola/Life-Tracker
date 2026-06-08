@@ -11,17 +11,20 @@ describe('ListEventsUseCase', () => {
   beforeEach(() => {
     findMany = jest.fn().mockResolvedValue({
       items: [
-        Event.rehydrate({
-          id: 'event-1',
-          userId: 'user-1',
-          name: 'Evento',
-          description: 'Descripcion',
-          notes: '',
-          fromDateTime: new Date('2026-06-05T08:29:00.000Z'),
-          toDateTime: new Date('2026-06-05T09:29:00.000Z'),
-          status: 'TODO',
-          tags: [{ name: 'universidad', label: 'universidad' }],
-        }),
+        {
+          event: Event.rehydrate({
+            id: 'event-1',
+            userId: 'user-1',
+            name: 'Evento',
+            description: 'Descripcion',
+            notes: '',
+            fromDateTime: new Date('2026-06-05T08:29:00.000Z'),
+            toDateTime: new Date('2026-06-05T09:29:00.000Z'),
+            status: 'TODO',
+            tags: [{ name: 'universidad', label: 'universidad' }],
+          }),
+          commentCount: 3,
+        },
       ],
       total: 1,
     });
@@ -59,6 +62,7 @@ describe('ListEventsUseCase', () => {
       name: 'Evento',
       status: 'TODO',
       tags: [{ name: 'universidad', label: 'universidad' }],
+      commentCount: 3,
     });
     expect(result.pagination).toEqual({
       page: 1,

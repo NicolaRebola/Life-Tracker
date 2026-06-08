@@ -50,7 +50,7 @@ export class ListEventsUseCase implements ListEventsPort {
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     return {
-      items: items.map((event) => {
+      items: items.map(({ event, commentCount }) => {
         const props = event.toPrimitives();
         return {
           id: props.id!,
@@ -61,6 +61,7 @@ export class ListEventsUseCase implements ListEventsPort {
           toDateTime: props.toDateTime.toISOString(),
           status: props.status,
           tags: props.tags,
+          commentCount,
         };
       }),
       pagination: {

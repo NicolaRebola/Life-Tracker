@@ -16,6 +16,7 @@ export type KanbanLaneProps = {
   onStatusChange?: (eventId: string, status: EventStatus) => void;
   onEditEvent?: (event: EventListItem) => void;
   onDeleteEvent?: (event: EventListItem) => void;
+  onAddComment?: (event: EventListItem) => void;
 };
 
 export function KanbanLane({
@@ -29,6 +30,7 @@ export function KanbanLane({
   onStatusChange,
   onEditEvent,
   onDeleteEvent,
+  onAddComment,
 }: KanbanLaneProps) {
   function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
     if (!enableDragAndDrop) return;
@@ -68,6 +70,7 @@ export function KanbanLane({
               onStatusChange={onStatusChange}
               onEdit={onEditEvent}
               onDelete={onDeleteEvent}
+              onAddComment={onAddComment}
             />
           ))
         )}

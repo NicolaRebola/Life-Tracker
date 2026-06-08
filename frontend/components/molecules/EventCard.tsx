@@ -19,6 +19,7 @@ type EventCardProps = {
   onStatusChange?: (eventId: string, status: EventStatus) => void;
   onEdit?: (event: EventListItem) => void;
   onDelete?: (event: EventListItem) => void;
+  onAddComment?: (event: EventListItem) => void;
 };
 
 const STATUS_OPTIONS: EventStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
@@ -46,6 +47,19 @@ function MoreVerticalIcon() {
   );
 }
 
+function MessagesIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden="true">
+      <path
+        d="M3.5 4.5H16.5V13.5H6.2L3.5 16.2V4.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function EventCard({
   event,
   draggable = false,
@@ -54,6 +68,7 @@ export default function EventCard({
   onStatusChange,
   onEdit,
   onDelete,
+  onAddComment,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -91,7 +106,24 @@ export default function EventCard({
           </p>
         </div>
 
-        <div className="relative shrink-0" ref={menuRef}>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            className="relative inline-flex items-center rounded-md text-gray-600 hover:bg-gray-100"
+            aria-label={`Abrir comentarios (${event.commentCount})`}
+            onClick={() => onAddComment?.(event)}
+          >
+            <span className="inline-flex size-8 items-center justify-center rounded-md text-gray-600">
+              <MessagesIcon />
+            </span>
+            {event.commentCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-white">
+                {event.commentCount > 99 ? "99+" : event.commentCount}
+              </span>
+            )}
+          </button>
+
+          <div className="relative" ref={menuRef}>
           <button
             type="button"
             aria-label="Abrir menú del evento"
@@ -137,6 +169,17 @@ export default function EventCard({
                 type="button"
                 className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
                 onClick={() => {
+                  onAddComment?.(event);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <MessagesIcon />
+                Add comment
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                onClick={() => {
                   onEdit?.(event);
                   setIsMenuOpen(false);
                 }}
@@ -146,6 +189,7 @@ export default function EventCard({
               </button>
             </div>
           )}
+          </div>
         </div>
       </CardHeader>
 
