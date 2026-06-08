@@ -18,8 +18,11 @@ import { CREATE_EVENT_COMMENT } from '../application/ports/inbound/create-event-
 import { CREATE_EVENT } from '../application/ports/inbound/create-event.port';
 import { DELETE_EVENT_COMMENT } from '../application/ports/inbound/delete-event-comment.port';
 import { DELETE_EVENT } from '../application/ports/inbound/delete-event.port';
+import { INVITE_EVENT_PARTICIPANT } from '../application/ports/inbound/invite-event-participant.port';
 import { LIST_EVENT_COMMENTS } from '../application/ports/inbound/list-event-comments.port';
+import { LIST_EVENT_PARTICIPANTS } from '../application/ports/inbound/list-event-participants.port';
 import { LIST_EVENTS } from '../application/ports/inbound/list-events.port';
+import { REMOVE_EVENT_PARTICIPANT } from '../application/ports/inbound/remove-event-participant.port';
 import { SEARCH_EVENT_TAGS } from '../application/ports/inbound/search-event-tags.port';
 import { UPDATE_EVENT_COMMENT } from '../application/ports/inbound/update-event-comment.port';
 import { UPDATE_EVENT_STATUS } from '../application/ports/inbound/update-event-status.port';
@@ -30,7 +33,9 @@ import { DeleteEventCommentValidationError } from '../application/errors/delete-
 import { DeleteEventValidationError } from '../application/errors/delete-event-validation.error';
 import { EventCommentForbiddenError } from '../application/errors/event-comment-forbidden.error';
 import { EventCommentNotFoundError } from '../application/errors/event-comment-not-found.error';
+import { EventParticipantNotFoundError } from '../application/errors/event-participant-not-found.error';
 import { EventNotFoundError } from '../application/errors/event-not-found.error';
+import { InviteEventParticipantValidationError } from '../application/errors/invite-event-participant-validation.error';
 import { ListEventsValidationError } from '../application/errors/list-events-validation.error';
 import { UpdateEventCommentValidationError } from '../application/errors/update-event-comment-validation.error';
 import { UpdateEventStatusConflictError } from '../application/errors/update-event-status-conflict.error';
@@ -42,14 +47,18 @@ import type { CreateEventCommentPort } from '../application/ports/inbound/create
 import type { CreateEventPort } from '../application/ports/inbound/create-event.port';
 import type { DeleteEventCommentPort } from '../application/ports/inbound/delete-event-comment.port';
 import type { DeleteEventPort } from '../application/ports/inbound/delete-event.port';
+import type { InviteEventParticipantPort } from '../application/ports/inbound/invite-event-participant.port';
 import type { ListEventCommentsPort } from '../application/ports/inbound/list-event-comments.port';
+import type { ListEventParticipantsPort } from '../application/ports/inbound/list-event-participants.port';
 import type { ListEventsPort } from '../application/ports/inbound/list-events.port';
+import type { RemoveEventParticipantPort } from '../application/ports/inbound/remove-event-participant.port';
 import type { SearchEventTagsPort } from '../application/ports/inbound/search-event-tags.port';
 import type { UpdateEventCommentPort } from '../application/ports/inbound/update-event-comment.port';
 import type { UpdateEventStatusPort } from '../application/ports/inbound/update-event-status.port';
 import type { UpdateEventPort } from '../application/ports/inbound/update-event.port';
 import type { CreateEventCommentDto } from './dto/create-event-comment.dto';
 import type { CreateEventDto } from './dto/create-event.dto';
+import type { InviteEventParticipantDto } from './dto/invite-event-participant.dto';
 import type { ListEventsQueryDto } from './dto/list-events-query.dto';
 import type { UpdateEventCommentDto } from './dto/update-event-comment.dto';
 import type { UpdateEventStatusDto } from './dto/update-event-status.dto';
@@ -68,10 +77,16 @@ export class EventController {
     private readonly deleteEventUseCase: DeleteEventPort,
     @Inject(DELETE_EVENT_COMMENT)
     private readonly deleteEventCommentUseCase: DeleteEventCommentPort,
+    @Inject(INVITE_EVENT_PARTICIPANT)
+    private readonly inviteEventParticipantUseCase: InviteEventParticipantPort,
     @Inject(LIST_EVENTS)
     private readonly listEventsUseCase: ListEventsPort,
     @Inject(LIST_EVENT_COMMENTS)
     private readonly listEventCommentsUseCase: ListEventCommentsPort,
+    @Inject(LIST_EVENT_PARTICIPANTS)
+    private readonly listEventParticipantsUseCase: ListEventParticipantsPort,
+    @Inject(REMOVE_EVENT_PARTICIPANT)
+    private readonly removeEventParticipantUseCase: RemoveEventParticipantPort,
     @Inject(SEARCH_EVENT_TAGS)
     private readonly searchEventTagsUseCase: SearchEventTagsPort,
     @Inject(UPDATE_EVENT_COMMENT)
@@ -165,6 +180,85 @@ export class EventController {
         throw new HttpException(
           { message: error.message, fields: error.fields },
           HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  @Get(':id/participants')
+  async listEventParticipants(
+    @Param('id') eventId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      return await this.listEventParticipantsUseCase.execute({
+        userId: req.user.id,
+        eventId,
+      });
+    } catch (error) {
+      if (error instanceof EventNotFoundError) {
+        throw new HttpException(
+          { message: error.message },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  @Post(':id/invitations')
+  @HttpCode(201)
+  async inviteEventParticipant(
+    @Param('id') eventId: string,
+    @Body() body: InviteEventParticipantDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      return await this.inviteEventParticipantUseCase.execute({
+        userId: req.user.id,
+        eventId,
+        email: body.email,
+      });
+    } catch (error) {
+      if (error instanceof InviteEventParticipantValidationError) {
+        throw new HttpException(
+          { message: error.message, fields: error.fields },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof EventNotFoundError) {
+        throw new HttpException(
+          { message: error.message },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  @Delete(':id/participants/:participantId')
+  @HttpCode(204)
+  async removeEventParticipant(
+    @Param('id') eventId: string,
+    @Param('participantId') participantId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      await this.removeEventParticipantUseCase.execute({
+        userId: req.user.id,
+        eventId,
+        participantId,
+      });
+    } catch (error) {
+      if (error instanceof EventParticipantNotFoundError) {
+        throw new HttpException(
+          { message: error.message },
+          HttpStatus.NOT_FOUND,
         );
       }
 

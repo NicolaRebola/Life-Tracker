@@ -19,7 +19,8 @@ describe('CreateEventCommentUseCase', () => {
       update: jest.fn(),
       findMany: jest.fn(),
       searchTagsByName: jest.fn(),
-      findByIdForUser: jest.fn().mockResolvedValue(
+      findByIdForUser: jest.fn(),
+      findByIdForOwner: jest.fn().mockResolvedValue(
         Event.rehydrate({
           id: 'event-1',
           userId: 'user-1',
@@ -32,6 +33,7 @@ describe('CreateEventCommentUseCase', () => {
           tags: [],
         }),
       ),
+      findByIdForParticipant: jest.fn(),
       applyStatusTransition: jest.fn(),
       softDelete: jest.fn(),
       purgeDeletedBefore: jest.fn(),
@@ -40,10 +42,12 @@ describe('CreateEventCommentUseCase', () => {
       id: 'comment-1',
       eventId: 'event-1',
       userId: 'user-1',
+      participantId: null,
       body: 'Comentario',
       createdAt: new Date('2026-06-08T10:00:00.000Z'),
       updatedAt: new Date('2026-06-08T10:00:00.000Z'),
       author: {
+        kind: 'USER',
         id: 'user-1',
         displayName: 'Test User',
         email: 'test@example.com',
@@ -52,7 +56,9 @@ describe('CreateEventCommentUseCase', () => {
     eventCommentRepository = {
       save,
       findManyByEventForUser: jest.fn(),
+      findManyByEventForParticipant: jest.fn(),
       findByIdForUser: jest.fn(),
+      findByIdForParticipant: jest.fn(),
       update: jest.fn(),
       softDelete: jest.fn(),
       countByEventIds: jest.fn(),
@@ -79,7 +85,7 @@ describe('CreateEventCommentUseCase', () => {
   });
 
   it('rejects comments for missing events', async () => {
-    eventRepository.findByIdForUser = jest.fn().mockResolvedValue(null);
+    eventRepository.findByIdForOwner = jest.fn().mockResolvedValue(null);
 
     await expect(
       useCase.execute({

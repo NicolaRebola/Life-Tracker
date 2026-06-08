@@ -3,7 +3,8 @@ import type { EventCommentListItem } from './list-event-comments.port';
 export const CREATE_EVENT_COMMENT = Symbol('CREATE_EVENT_COMMENT');
 
 export type CreateEventCommentCommand = {
-  userId: string;
+  userId?: string;
+  participantId?: string;
   eventId: string;
   body: string;
 };

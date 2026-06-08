@@ -3,12 +3,14 @@ export const LIST_EVENT_COMMENTS = Symbol('LIST_EVENT_COMMENTS');
 export type EventCommentListItem = {
   id: string;
   eventId: string;
-  userId: string;
+  userId: string | null;
+  participantId: string | null;
   body: string;
   createdAt: string;
   updatedAt: string;
   isOwn: boolean;
   author: {
+    kind: 'USER' | 'PARTICIPANT';
     id: string;
     displayName: string | null;
     email: string;
@@ -16,7 +18,8 @@ export type EventCommentListItem = {
 };
 
 export type ListEventCommentsCommand = {
-  userId: string;
+  userId?: string;
+  participantId?: string;
   eventId: string;
 };
 

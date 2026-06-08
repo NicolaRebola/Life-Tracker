@@ -43,6 +43,10 @@ export class Event {
     return this.props.status;
   }
 
+  get userId(): string {
+    return this.props.userId;
+  }
+
   static create(props: CreateEventProps): Event {
     Event.assertValid(props);
 

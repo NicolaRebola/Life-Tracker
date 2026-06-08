@@ -50,12 +50,21 @@ export class UpdateEventCommentUseCase implements UpdateEventCommentPort {
       await this.eventCommentRepository.update(updatedComment);
 
     return {
-      comment: toEventCommentListItem(savedComment, command.userId),
+      comment: toEventCommentListItem(savedComment, {
+        type: 'OWNER',
+        userId: command.userId,
+      }),
     };
   }
 
   private updateDomainComment(
-    existing: { id: string; eventId: string; userId: string; body: string },
+    existing: {
+      id: string;
+      eventId: string;
+      userId: string | null;
+      participantId: string | null;
+      body: string;
+    },
     body: string,
   ): EventComment {
     try {
@@ -63,6 +72,7 @@ export class UpdateEventCommentUseCase implements UpdateEventCommentPort {
         id: existing.id,
         eventId: existing.eventId,
         userId: existing.userId,
+        participantId: existing.participantId,
         body: existing.body,
       }).updateBody(body);
     } catch (error) {

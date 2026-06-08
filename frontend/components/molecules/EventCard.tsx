@@ -20,6 +20,7 @@ type EventCardProps = {
   onEdit?: (event: EventListItem) => void;
   onDelete?: (event: EventListItem) => void;
   onAddComment?: (event: EventListItem) => void;
+  onManageParticipants?: (event: EventListItem) => void;
 };
 
 const STATUS_OPTIONS: EventStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
@@ -60,6 +61,36 @@ function MessagesIcon() {
   );
 }
 
+function ParticipantsIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden="true">
+      <path
+        d="M7.5 9.5C9.2 9.5 10.5 8.2 10.5 6.5C10.5 4.8 9.2 3.5 7.5 3.5C5.8 3.5 4.5 4.8 4.5 6.5C4.5 8.2 5.8 9.5 7.5 9.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M2.8 16.5C3.3 13.8 5.1 12.3 7.5 12.3C9.9 12.3 11.7 13.8 12.2 16.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M13 9.2C14.2 8.8 15 7.8 15 6.5C15 5.3 14.3 4.3 13.2 3.8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M13.4 12.6C15.2 13.1 16.4 14.4 16.8 16.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function EventCard({
   event,
   draggable = false,
@@ -69,6 +100,7 @@ export default function EventCard({
   onEdit,
   onDelete,
   onAddComment,
+  onManageParticipants,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -104,6 +136,9 @@ export default function EventCard({
           <p className="mt-1 text-xs text-gray-500">
             {formatEventDateRange(event.fromDateTime, event.toDateTime)}
           </p>
+          <p className="mt-1 truncate text-xs text-gray-500">
+            Creado por {event.creator.displayName || event.creator.email}
+          </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -119,6 +154,22 @@ export default function EventCard({
             {event.commentCount > 0 && (
               <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-white">
                 {event.commentCount > 99 ? "99+" : event.commentCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="relative inline-flex items-center rounded-md text-gray-600 hover:bg-gray-100"
+            aria-label={`Abrir participantes (${event.participantCount})`}
+            onClick={() => onManageParticipants?.(event)}
+          >
+            <span className="inline-flex size-8 items-center justify-center rounded-md text-gray-600">
+              <ParticipantsIcon />
+            </span>
+            {event.participantCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-white">
+                {event.participantCount > 99 ? "99+" : event.participantCount}
               </span>
             )}
           </button>
@@ -175,6 +226,17 @@ export default function EventCard({
               >
                 <MessagesIcon />
                 Add comment
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                onClick={() => {
+                  onManageParticipants?.(event);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <ParticipantsIcon />
+                Participantes
               </button>
               <button
                 type="button"

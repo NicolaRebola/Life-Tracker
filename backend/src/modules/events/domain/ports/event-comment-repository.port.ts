@@ -3,6 +3,7 @@ import type { EventComment } from '../entities/event-comment.entity';
 export const EVENT_COMMENT_REPOSITORY = Symbol('EVENT_COMMENT_REPOSITORY');
 
 export type EventCommentAuthor = {
+  kind: 'USER' | 'PARTICIPANT';
   id: string;
   displayName: string | null;
   email: string;
@@ -11,7 +12,8 @@ export type EventCommentAuthor = {
 export type EventCommentWithAuthor = {
   id: string;
   eventId: string;
-  userId: string;
+  userId: string | null;
+  participantId: string | null;
   body: string;
   createdAt: Date;
   updatedAt: Date;
@@ -24,8 +26,17 @@ export interface EventCommentRepositoryPort {
     userId: string,
     eventId: string,
   ): Promise<EventCommentWithAuthor[]>;
+  findManyByEventForParticipant(
+    participantId: string,
+    eventId: string,
+  ): Promise<EventCommentWithAuthor[]>;
   findByIdForUser(
     userId: string,
+    eventId: string,
+    commentId: string,
+  ): Promise<EventCommentWithAuthor | null>;
+  findByIdForParticipant(
+    participantId: string,
     eventId: string,
     commentId: string,
   ): Promise<EventCommentWithAuthor | null>;

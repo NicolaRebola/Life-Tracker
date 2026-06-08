@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Loader from "@/components/atoms/Loader/Loader";
 import ConfirmDeleteEventDialog from "@/components/molecules/ConfirmDeleteEventDialog";
 import EventCommentsSheet from "@/components/organisms/EventCommentsSheet";
+import EventParticipantsSheet from "@/components/organisms/EventParticipantsSheet";
 import { KanbanLane } from "@/components/organisms/KanbanLane";
 import EventFilters from "@/components/organisms/EventFilters";
 import { Toast } from "@/components/tailgrids/core/toast";
@@ -61,6 +62,8 @@ export default function KanbanBoard({
   const [pendingDeleteEvent, setPendingDeleteEvent] = useState<EventListItem | null>(null);
   const [commentingEvent, setCommentingEvent] = useState<EventListItem | null>(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [participantsEvent, setParticipantsEvent] = useState<EventListItem | null>(null);
+  const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -157,6 +160,12 @@ export default function KanbanBoard({
     setIsCommentsOpen(true);
   }
 
+  function handleManageParticipants(event: EventListItem) {
+    if (isUpdating || isDeleting) return;
+    setParticipantsEvent(event);
+    setIsParticipantsOpen(true);
+  }
+
   const handleCommentCountChange = useCallback((eventId: string, commentCount: number) => {
     setItems((currentItems) =>
       currentItems.map((event) =>
@@ -168,6 +177,21 @@ export default function KanbanBoard({
     setCommentingEvent((currentEvent) =>
       currentEvent?.id === eventId && currentEvent.commentCount !== commentCount
         ? { ...currentEvent, commentCount }
+        : currentEvent,
+    );
+  }, []);
+
+  const handleParticipantCountChange = useCallback((eventId: string, participantCount: number) => {
+    setItems((currentItems) =>
+      currentItems.map((event) =>
+        event.id === eventId && event.participantCount !== participantCount
+          ? { ...event, participantCount }
+          : event,
+      ),
+    );
+    setParticipantsEvent((currentEvent) =>
+      currentEvent?.id === eventId && currentEvent.participantCount !== participantCount
+        ? { ...currentEvent, participantCount }
         : currentEvent,
     );
   }, []);
@@ -274,6 +298,7 @@ export default function KanbanBoard({
               onEditEvent={onEditEvent}
               onDeleteEvent={handleDeleteRequest}
               onAddComment={handleAddComment}
+              onManageParticipants={handleManageParticipants}
             />
           </div>
 
@@ -292,6 +317,7 @@ export default function KanbanBoard({
                 onEditEvent={onEditEvent}
                 onDeleteEvent={handleDeleteRequest}
                 onAddComment={handleAddComment}
+                onManageParticipants={handleManageParticipants}
               />
             ))}
           </div>
@@ -322,6 +348,18 @@ export default function KanbanBoard({
           }
         }}
         onCommentCountChange={handleCommentCountChange}
+      />
+
+      <EventParticipantsSheet
+        event={participantsEvent}
+        isOpen={isParticipantsOpen}
+        onOpenChange={(open) => {
+          setIsParticipantsOpen(open);
+          if (!open) {
+            setParticipantsEvent(null);
+          }
+        }}
+        onParticipantCountChange={handleParticipantCountChange}
       />
     </div>
   );

@@ -4,7 +4,8 @@ import type { EventCommentWithAuthor } from '../../../domain/ports/event-comment
 type PrismaEventCommentWithUser = {
   id: string;
   eventId: string;
-  userId: string;
+  userId: string | null;
+  participantId: string | null;
   body: string;
   createdAt: Date;
   updatedAt: Date;
@@ -13,7 +14,12 @@ type PrismaEventCommentWithUser = {
     id: string;
     displayName: string | null;
     email: string;
-  };
+  } | null;
+  participant: {
+    id: string;
+    displayName: string | null;
+    email: string;
+  } | null;
 };
 
 export class EventCommentPrismaMapper {
@@ -22,7 +28,8 @@ export class EventCommentPrismaMapper {
 
     return {
       eventId: props.eventId,
-      userId: props.userId,
+      userId: props.userId ?? null,
+      participantId: props.participantId ?? null,
       body: props.body,
     };
   }
@@ -32,6 +39,7 @@ export class EventCommentPrismaMapper {
       id: row.id,
       eventId: row.eventId,
       userId: row.userId,
+      participantId: row.participantId,
       body: row.body,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -40,18 +48,29 @@ export class EventCommentPrismaMapper {
   }
 
   static toWithAuthor(row: PrismaEventCommentWithUser): EventCommentWithAuthor {
+    const author = row.user
+      ? {
+          kind: 'USER' as const,
+          id: row.user.id,
+          displayName: row.user.displayName,
+          email: row.user.email,
+        }
+      : {
+          kind: 'PARTICIPANT' as const,
+          id: row.participant!.id,
+          displayName: row.participant!.displayName,
+          email: row.participant!.email,
+        };
+
     return {
       id: row.id,
       eventId: row.eventId,
       userId: row.userId,
+      participantId: row.participantId,
       body: row.body,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-      author: {
-        id: row.user.id,
-        displayName: row.user.displayName,
-        email: row.user.email,
-      },
+      author,
     };
   }
 }

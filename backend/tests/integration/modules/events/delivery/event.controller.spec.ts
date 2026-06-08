@@ -13,7 +13,12 @@ import { UPDATE_EVENT_COMMENT } from 'src/modules/events/application/ports/inbou
 import { UPDATE_EVENT_STATUS } from 'src/modules/events/application/ports/inbound/update-event-status.port';
 import { UPDATE_EVENT } from 'src/modules/events/application/ports/inbound/update-event.port';
 import { DELETE_EVENT } from 'src/modules/events/application/ports/inbound/delete-event.port';
+import { INVITE_EVENT_PARTICIPANT } from 'src/modules/events/application/ports/inbound/invite-event-participant.port';
+import { LIST_EVENT_PARTICIPANTS } from 'src/modules/events/application/ports/inbound/list-event-participants.port';
+import { REMOVE_EVENT_PARTICIPANT } from 'src/modules/events/application/ports/inbound/remove-event-participant.port';
 import { CreateEventCommentValidationError } from 'src/modules/events/application/errors/create-event-comment-validation.error';
+import { EventParticipantNotFoundError } from 'src/modules/events/application/errors/event-participant-not-found.error';
+import { InviteEventParticipantValidationError } from 'src/modules/events/application/errors/invite-event-participant-validation.error';
 import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
 import { DeleteEventValidationError } from 'src/modules/events/application/errors/delete-event-validation.error';
 import { EventCommentNotFoundError } from 'src/modules/events/application/errors/event-comment-not-found.error';
@@ -39,6 +44,16 @@ describe('EventController (integration)', () => {
   let updateEventUseCase: { execute: jest.Mock };
   let deleteEventUseCase: { execute: jest.Mock };
   let deleteEventCommentUseCase: { execute: jest.Mock };
+  let inviteEventParticipantUseCase: { execute: jest.Mock };
+  let listEventParticipantsUseCase: { execute: jest.Mock };
+  let removeEventParticipantUseCase: { execute: jest.Mock };
+
+  const userCommentAuthor = {
+    kind: 'USER' as const,
+    id: 'user-1',
+    displayName: 'Test User',
+    email: 'test@example.com',
+  };
 
   beforeEach(async () => {
     createEventUseCase = {
@@ -50,15 +65,12 @@ describe('EventController (integration)', () => {
           id: 'comment-1',
           eventId: 'event-1',
           userId: 'user-1',
+          participantId: null,
           body: 'Comentario',
           createdAt: '2026-06-08T10:00:00.000Z',
           updatedAt: '2026-06-08T10:00:00.000Z',
           isOwn: true,
-          author: {
-            id: 'user-1',
-            displayName: 'Test User',
-            email: 'test@example.com',
-          },
+          author: userCommentAuthor,
         },
       }),
     };
@@ -92,15 +104,12 @@ describe('EventController (integration)', () => {
             id: 'comment-1',
             eventId: 'event-1',
             userId: 'user-1',
+            participantId: null,
             body: 'Comentario',
             createdAt: '2026-06-08T10:00:00.000Z',
             updatedAt: '2026-06-08T10:00:00.000Z',
             isOwn: true,
-            author: {
-              id: 'user-1',
-              displayName: 'Test User',
-              email: 'test@example.com',
-            },
+            author: userCommentAuthor,
           },
         ],
       }),
@@ -119,15 +128,12 @@ describe('EventController (integration)', () => {
           id: 'comment-1',
           eventId: 'event-1',
           userId: 'user-1',
+          participantId: null,
           body: 'Comentario editado',
           createdAt: '2026-06-08T10:00:00.000Z',
           updatedAt: '2026-06-08T10:30:00.000Z',
           isOwn: true,
-          author: {
-            id: 'user-1',
-            displayName: 'Test User',
-            email: 'test@example.com',
-          },
+          author: userCommentAuthor,
         },
       }),
     };
@@ -147,6 +153,34 @@ describe('EventController (integration)', () => {
       execute: jest.fn().mockResolvedValue(undefined),
     };
     deleteEventCommentUseCase = {
+      execute: jest.fn().mockResolvedValue(undefined),
+    };
+    inviteEventParticipantUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        invitation: {
+          id: 'invitation-1',
+          eventId: 'event-1',
+          invitedEmail: 'guest@example.com',
+          channel: 'EMAIL',
+          status: 'PENDING',
+          expiresAt: '2026-06-09T10:00:00.000Z',
+        },
+      }),
+    };
+    listEventParticipantsUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        items: [
+          {
+            id: 'participant-1',
+            email: 'guest@example.com',
+            displayName: null,
+            status: 'ACCEPTED',
+            joinedAt: '2026-06-08T10:00:00.000Z',
+          },
+        ],
+      }),
+    };
+    removeEventParticipantUseCase = {
       execute: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -193,6 +227,18 @@ describe('EventController (integration)', () => {
           provide: DELETE_EVENT_COMMENT,
           useValue: deleteEventCommentUseCase,
         },
+        {
+          provide: INVITE_EVENT_PARTICIPANT,
+          useValue: inviteEventParticipantUseCase,
+        },
+        {
+          provide: LIST_EVENT_PARTICIPANTS,
+          useValue: listEventParticipantsUseCase,
+        },
+        {
+          provide: REMOVE_EVENT_PARTICIPANT,
+          useValue: removeEventParticipantUseCase,
+        },
       ],
     })
       .overrideGuard(SessionGuard)
@@ -215,7 +261,9 @@ describe('EventController (integration)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('creates an event for the authenticated user', async () => {
@@ -469,6 +517,98 @@ describe('EventController (integration)', () => {
       });
   });
 
+  it('lists event participants for the authenticated user', async () => {
+    await request(app.getHttpServer() as Server)
+      .get('/events/event-1/participants')
+      .expect(200)
+      .expect({
+        items: [
+          {
+            id: 'participant-1',
+            email: 'guest@example.com',
+            displayName: null,
+            status: 'ACCEPTED',
+            joinedAt: '2026-06-08T10:00:00.000Z',
+          },
+        ],
+      });
+
+    expect(listEventParticipantsUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+    });
+  });
+
+  it('maps not found errors when listing participants', async () => {
+    listEventParticipantsUseCase.execute.mockRejectedValueOnce(
+      new EventNotFoundError(),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .get('/events/missing-event/participants')
+      .expect(404);
+  });
+
+  it('invites a participant by email', async () => {
+    await request(app.getHttpServer() as Server)
+      .post('/events/event-1/invitations')
+      .send({ email: 'guest@example.com' })
+      .expect(201)
+      .expect({
+        invitation: {
+          id: 'invitation-1',
+          eventId: 'event-1',
+          invitedEmail: 'guest@example.com',
+          channel: 'EMAIL',
+          status: 'PENDING',
+          expiresAt: '2026-06-09T10:00:00.000Z',
+        },
+      });
+
+    expect(inviteEventParticipantUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      email: 'guest@example.com',
+    });
+  });
+
+  it('maps invite validation errors to bad request responses', async () => {
+    inviteEventParticipantUseCase.execute.mockRejectedValueOnce(
+      new InviteEventParticipantValidationError('Email inválido', ['email']),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .post('/events/event-1/invitations')
+      .send({ email: 'invalid' })
+      .expect(400)
+      .expect(({ body }: { body: { message: string; fields: string[] } }) => {
+        expect(body.message).toBe('Email inválido');
+        expect(body.fields).toEqual(['email']);
+      });
+  });
+
+  it('removes a participant from an event', async () => {
+    await request(app.getHttpServer() as Server)
+      .delete('/events/event-1/participants/participant-1')
+      .expect(204);
+
+    expect(removeEventParticipantUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      participantId: 'participant-1',
+    });
+  });
+
+  it('maps not found errors when removing a participant', async () => {
+    removeEventParticipantUseCase.execute.mockRejectedValueOnce(
+      new EventParticipantNotFoundError(),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .delete('/events/event-1/participants/missing-participant')
+      .expect(404);
+  });
+
   it('lists comments for an event', async () => {
     await request(app.getHttpServer() as Server)
       .get('/events/event-1/comments')
@@ -479,15 +619,12 @@ describe('EventController (integration)', () => {
             id: 'comment-1',
             eventId: 'event-1',
             userId: 'user-1',
+            participantId: null,
             body: 'Comentario',
             createdAt: '2026-06-08T10:00:00.000Z',
             updatedAt: '2026-06-08T10:00:00.000Z',
             isOwn: true,
-            author: {
-              id: 'user-1',
-              displayName: 'Test User',
-              email: 'test@example.com',
-            },
+            author: userCommentAuthor,
           },
         ],
       });
@@ -508,15 +645,12 @@ describe('EventController (integration)', () => {
           id: 'comment-1',
           eventId: 'event-1',
           userId: 'user-1',
+          participantId: null,
           body: 'Comentario',
           createdAt: '2026-06-08T10:00:00.000Z',
           updatedAt: '2026-06-08T10:00:00.000Z',
           isOwn: true,
-          author: {
-            id: 'user-1',
-            displayName: 'Test User',
-            email: 'test@example.com',
-          },
+          author: userCommentAuthor,
         },
       });
 

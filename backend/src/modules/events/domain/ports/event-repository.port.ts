@@ -17,6 +17,12 @@ export type ListEventsCriteria = {
 export type PaginatedEventItem = {
   event: Event;
   commentCount: number;
+  participantCount: number;
+  creator: {
+    id: string;
+    displayName: string | null;
+    email: string;
+  };
 };
 
 export type PaginatedEvents = {
@@ -46,6 +52,11 @@ export interface EventRepositoryPort {
   update(event: Event): Promise<Event>;
   findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents>;
   findByIdForUser(userId: string, eventId: string): Promise<Event | null>;
+  findByIdForOwner(userId: string, eventId: string): Promise<Event | null>;
+  findByIdForParticipant(
+    participantId: string,
+    eventId: string,
+  ): Promise<Event | null>;
   searchTagsByName(
     userId: string,
     name: string,
