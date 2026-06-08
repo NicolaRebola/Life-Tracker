@@ -8,6 +8,8 @@ export type ListEventsCriteria = {
   name?: string;
   status?: EventStatus;
   tags?: string[];
+  rangeStart?: Date;
+  rangeEnd?: Date;
   page: number;
   limit: number;
 };

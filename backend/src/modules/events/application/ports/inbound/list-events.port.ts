@@ -7,6 +7,8 @@ export type ListEventsCommand = {
   name?: string;
   status?: EventStatus;
   tags?: string[];
+  fromDateTime?: string;
+  toDateTime?: string;
   page?: number;
   limit?: number;
 };

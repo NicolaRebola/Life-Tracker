@@ -155,6 +155,8 @@ export class EventController {
         name: query.name,
         status: query.status as EventStatus | undefined,
         tags,
+        fromDateTime: query.fromDateTime,
+        toDateTime: query.toDateTime,
         page,
         limit,
       });
