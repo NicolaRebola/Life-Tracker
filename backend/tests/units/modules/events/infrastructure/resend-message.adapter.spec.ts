@@ -46,7 +46,10 @@ describe('ResendMessageAdapter', () => {
       headers: null,
     });
 
-    const result = await new ResendMessageAdapter(client).send(message);
+    const result = await ResendMessageAdapter.createWithClient(
+      client,
+      'Life Tracker <noreply@example.com>',
+    ).send(message);
 
     expect(result).toEqual({
       ok: true,
@@ -77,7 +80,10 @@ describe('ResendMessageAdapter', () => {
       headers: null,
     });
 
-    const result = await new ResendMessageAdapter(client).send(message);
+    const result = await ResendMessageAdapter.createWithClient(
+      client,
+      'Life Tracker <noreply@example.com>',
+    ).send(message);
 
     expect(result).toEqual({
       ok: false,
@@ -98,7 +104,10 @@ describe('ResendMessageAdapter', () => {
       headers: null,
     });
 
-    const result = await new ResendMessageAdapter(client).send(message);
+    const result = await ResendMessageAdapter.createWithClient(
+      client,
+      'Life Tracker <noreply@example.com>',
+    ).send(message);
 
     expect(result).toEqual({
       ok: false,

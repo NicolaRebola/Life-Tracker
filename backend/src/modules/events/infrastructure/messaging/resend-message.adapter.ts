@@ -40,9 +40,20 @@ export class ResendMessageAdapter implements MessageChannelAdapter {
   private readonly client: ResendEmailClient;
   private readonly fromEmail: string;
 
-  constructor(client?: ResendEmailClient) {
-    this.client = client ?? new Resend(process.env.RESEND_API_KEY);
+  constructor() {
+    this.client = new Resend(process.env.RESEND_API_KEY);
     this.fromEmail = process.env.RESEND_FROM_EMAIL ?? '';
+  }
+
+  static createWithClient(
+    client: ResendEmailClient,
+    fromEmail: string,
+  ): ResendMessageAdapter {
+    const adapter = Object.create(
+      ResendMessageAdapter.prototype,
+    ) as ResendMessageAdapter;
+    Object.assign(adapter, { client, fromEmail });
+    return adapter;
   }
 
   async send(message: SendableMessage): Promise<MessageSendResult> {
