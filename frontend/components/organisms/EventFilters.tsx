@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import TagFilter from "@/components/molecules/TagFilter";
 import Paginator, { type PageSize } from "@/components/molecules/Paginator";
+import TagFilter from "@/components/molecules/TagFilter";
 import { Button } from "@/components/tailgrids/core/button";
 import {
   EVENT_STATUSES,
@@ -10,7 +10,7 @@ import {
   type EventStatus,
 } from "@/features/events/event-status";
 
-type FiltersProps = {
+type EventFiltersProps = {
   name: string;
   status: EventStatus | "";
   tags: string;
@@ -73,7 +73,7 @@ function StatusFilter({
   );
 }
 
-export default function Filters({
+export default function EventFilters({
   name,
   status,
   tags,
@@ -88,7 +88,7 @@ export default function Filters({
   onPageChange,
   onLimitChange,
   onError,
-}: FiltersProps) {
+}: EventFiltersProps) {
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
