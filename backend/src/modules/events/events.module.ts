@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/shared/prisma/prisma.module';
 import { EventInvitationController } from './delivery/event-invitation.controller';
 import { EventController } from './delivery/event.controller';
+import { OutboxDispatchController } from './delivery/outbox-dispatch.controller';
 import { SharedEventController } from './delivery/shared-event.controller';
 import { USE_CASES } from './application';
 import { REPOSITORIES } from './infrastructure/repositories';
@@ -22,6 +23,8 @@ import { PrismaMessageOutboxRepository } from './infrastructure/repositories/pri
 import { PrismaParticipantSessionRepository } from './infrastructure/repositories/prisma/participant-session.repository';
 import { EmailDevMessageAdapter } from './infrastructure/messaging/email-dev-message.adapter';
 import { EmailInvitationStrategy } from './infrastructure/messaging/email-invitation.strategy';
+import { ResendMessageAdapter } from './infrastructure/messaging/resend-message.adapter';
+import { InternalJobGuard } from './application/internal-job.guard';
 import { ParticipantSessionGuard } from './application/participant-session.guard';
 import { ACCEPT_EVENT_INVITATION } from './application/ports/inbound/accept-event-invitation.port';
 import { CREATE_EVENT_COMMENT } from './application/ports/inbound/create-event-comment.port';
@@ -65,6 +68,7 @@ import { UpdateEventUseCase } from './application/use-cases/update-event-use-cas
   controllers: [
     EventController,
     EventInvitationController,
+    OutboxDispatchController,
     SharedEventController,
   ],
   providers: [
@@ -72,6 +76,8 @@ import { UpdateEventUseCase } from './application/use-cases/update-event-use-cas
     ...REPOSITORIES,
     EmailDevMessageAdapter,
     EmailInvitationStrategy,
+    ResendMessageAdapter,
+    InternalJobGuard,
     ParticipantSessionGuard,
     {
       provide: ACCEPT_EVENT_INVITATION,
@@ -111,7 +117,11 @@ import { UpdateEventUseCase } from './application/use-cases/update-event-use-cas
     },
     {
       provide: MESSAGE_CHANNEL_ADAPTER,
-      useExisting: EmailDevMessageAdapter,
+      useFactory: (
+        resendAdapter: ResendMessageAdapter,
+        devAdapter: EmailDevMessageAdapter,
+      ) => (process.env.RESEND_API_KEY ? resendAdapter : devAdapter),
+      inject: [ResendMessageAdapter, EmailDevMessageAdapter],
     },
     { provide: EVENT_REPOSITORY, useExisting: PrismaEventRepository },
     {
