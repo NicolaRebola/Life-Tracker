@@ -8,6 +8,7 @@ import type {
 } from 'src/modules/events/domain';
 
 describe('CreateEventCommentUseCase', () => {
+  let save: jest.Mock;
   let eventRepository: EventRepositoryPort;
   let eventCommentRepository: EventCommentRepositoryPort;
   let useCase: CreateEventCommentUseCase;
@@ -35,20 +36,21 @@ describe('CreateEventCommentUseCase', () => {
       softDelete: jest.fn(),
       purgeDeletedBefore: jest.fn(),
     };
+    save = jest.fn().mockResolvedValue({
+      id: 'comment-1',
+      eventId: 'event-1',
+      userId: 'user-1',
+      body: 'Comentario',
+      createdAt: new Date('2026-06-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-06-08T10:00:00.000Z'),
+      author: {
+        id: 'user-1',
+        displayName: 'Test User',
+        email: 'test@example.com',
+      },
+    });
     eventCommentRepository = {
-      save: jest.fn().mockResolvedValue({
-        id: 'comment-1',
-        eventId: 'event-1',
-        userId: 'user-1',
-        body: 'Comentario',
-        createdAt: new Date('2026-06-08T10:00:00.000Z'),
-        updatedAt: new Date('2026-06-08T10:00:00.000Z'),
-        author: {
-          id: 'user-1',
-          displayName: 'Test User',
-          email: 'test@example.com',
-        },
-      }),
+      save,
       findManyByEventForUser: jest.fn(),
       findByIdForUser: jest.fn(),
       update: jest.fn(),
@@ -73,7 +75,7 @@ describe('CreateEventCommentUseCase', () => {
       body: 'Comentario',
       isOwn: true,
     });
-    expect(eventCommentRepository.save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
   });
 
   it('rejects comments for missing events', async () => {
@@ -97,6 +99,6 @@ describe('CreateEventCommentUseCase', () => {
       }),
     ).rejects.toBeInstanceOf(CreateEventCommentValidationError);
 
-    expect(eventCommentRepository.save).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 });

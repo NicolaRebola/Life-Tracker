@@ -22,9 +22,13 @@ export class UpdateEventCommentUseCase implements UpdateEventCommentPort {
     private readonly eventCommentRepository: EventCommentRepositoryPort,
   ) {}
 
-  async execute(command: UpdateEventCommentCommand): Promise<UpdateEventCommentResult> {
+  async execute(
+    command: UpdateEventCommentCommand,
+  ): Promise<UpdateEventCommentResult> {
     if (!command.commentId?.trim()) {
-      throw new UpdateEventCommentValidationError('Comentario inválido', ['commentId']);
+      throw new UpdateEventCommentValidationError('Comentario inválido', [
+        'commentId',
+      ]);
     }
 
     const existing = await this.eventCommentRepository.findByIdForUser(
@@ -42,7 +46,8 @@ export class UpdateEventCommentUseCase implements UpdateEventCommentPort {
     }
 
     const updatedComment = this.updateDomainComment(existing, command.body);
-    const savedComment = await this.eventCommentRepository.update(updatedComment);
+    const savedComment =
+      await this.eventCommentRepository.update(updatedComment);
 
     return {
       comment: toEventCommentListItem(savedComment, command.userId),
@@ -62,7 +67,10 @@ export class UpdateEventCommentUseCase implements UpdateEventCommentPort {
       }).updateBody(body);
     } catch (error) {
       if (error instanceof EventCommentValidationError) {
-        throw new UpdateEventCommentValidationError(error.message, error.fields);
+        throw new UpdateEventCommentValidationError(
+          error.message,
+          error.fields,
+        );
       }
 
       throw error;

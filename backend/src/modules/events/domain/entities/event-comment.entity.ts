@@ -68,11 +68,16 @@ export class EventComment {
     }
 
     if (!props.userId?.trim()) {
-      throw new EventCommentValidationError('Usuario no identificado', ['userId']);
+      throw new EventCommentValidationError('Usuario no identificado', [
+        'userId',
+      ]);
     }
 
     if (!props.body || props.body.trim() === '') {
-      throw new EventCommentValidationError('El comentario no puede estar vacío', ['body']);
+      throw new EventCommentValidationError(
+        'El comentario no puede estar vacío',
+        ['body'],
+      );
     }
 
     if (props.body.trim().length > 5000) {

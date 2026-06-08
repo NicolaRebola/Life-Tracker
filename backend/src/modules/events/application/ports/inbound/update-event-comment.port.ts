@@ -14,5 +14,7 @@ export type UpdateEventCommentResult = {
 };
 
 export interface UpdateEventCommentPort {
-  execute(command: UpdateEventCommentCommand): Promise<UpdateEventCommentResult>;
+  execute(
+    command: UpdateEventCommentCommand,
+  ): Promise<UpdateEventCommentResult>;
 }

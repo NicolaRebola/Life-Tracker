@@ -13,5 +13,7 @@ export type CreateEventCommentResult = {
 };
 
 export interface CreateEventCommentPort {
-  execute(command: CreateEventCommentCommand): Promise<CreateEventCommentResult>;
+  execute(
+    command: CreateEventCommentCommand,
+  ): Promise<CreateEventCommentResult>;
 }

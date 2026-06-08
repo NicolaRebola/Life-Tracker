@@ -25,7 +25,9 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
     private readonly eventCommentRepository: EventCommentRepositoryPort,
   ) {}
 
-  async execute(command: CreateEventCommentCommand): Promise<CreateEventCommentResult> {
+  async execute(
+    command: CreateEventCommentCommand,
+  ): Promise<CreateEventCommentResult> {
     const event = await this.eventRepository.findByIdForUser(
       command.userId,
       command.eventId,
@@ -43,7 +45,9 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
     };
   }
 
-  private createDomainComment(command: CreateEventCommentCommand): EventComment {
+  private createDomainComment(
+    command: CreateEventCommentCommand,
+  ): EventComment {
     try {
       return EventComment.create({
         eventId: command.eventId,
@@ -52,7 +56,10 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
       });
     } catch (error) {
       if (error instanceof EventCommentValidationError) {
-        throw new CreateEventCommentValidationError(error.message, error.fields);
+        throw new CreateEventCommentValidationError(
+          error.message,
+          error.fields,
+        );
       }
 
       throw error;

@@ -48,7 +48,10 @@ import { UpdateEventUseCase } from './application/use-cases/update-event-use-cas
     { provide: UPDATE_EVENT_STATUS, useExisting: UpdateEventStatusUseCase },
     { provide: UPDATE_EVENT, useExisting: UpdateEventUseCase },
     { provide: EVENT_REPOSITORY, useExisting: PrismaEventRepository },
-    { provide: EVENT_COMMENT_REPOSITORY, useExisting: PrismaEventCommentRepository },
+    {
+      provide: EVENT_COMMENT_REPOSITORY,
+      useExisting: PrismaEventCommentRepository,
+    },
   ],
 })
 export class EventModule {}

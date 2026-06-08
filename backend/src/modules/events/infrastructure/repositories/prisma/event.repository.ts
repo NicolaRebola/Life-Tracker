@@ -6,7 +6,6 @@ import type {
   EventTagSuggestion,
   EventRepositoryPort,
   ListEventsCriteria,
-  PaginatedEventItem,
   PaginatedEvents,
 } from '../../../domain';
 import type { EventStatus } from '../../../domain/entities/event-status';

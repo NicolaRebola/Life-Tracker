@@ -19,7 +19,9 @@ export class DeleteEventCommentUseCase implements DeleteEventCommentPort {
 
   async execute(command: DeleteEventCommentCommand): Promise<void> {
     if (!command.commentId?.trim()) {
-      throw new DeleteEventCommentValidationError('Comentario inválido', ['commentId']);
+      throw new DeleteEventCommentValidationError('Comentario inválido', [
+        'commentId',
+      ]);
     }
 
     const deleted = await this.eventCommentRepository.softDelete(

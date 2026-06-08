@@ -22,7 +22,9 @@ export class ListEventCommentsUseCase implements ListEventCommentsPort {
     private readonly eventCommentRepository: EventCommentRepositoryPort,
   ) {}
 
-  async execute(command: ListEventCommentsCommand): Promise<ListEventCommentsResult> {
+  async execute(
+    command: ListEventCommentsCommand,
+  ): Promise<ListEventCommentsResult> {
     const event = await this.eventRepository.findByIdForUser(
       command.userId,
       command.eventId,
