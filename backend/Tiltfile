@@ -1,0 +1,15 @@
+local_resource(
+    "backend",
+    cmd="pnpm install && pnpm exec prisma generate && pnpm exec prisma migrate deploy",
+    serve_cmd="pnpm start:dev",
+    deps=[
+        "package.json",
+        "pnpm-lock.yaml",
+        "prisma",
+    ],
+    resource_deps=["postgres"],
+    env={
+        "PORT": "8080",
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5340/life_tracker",
+    },
+)

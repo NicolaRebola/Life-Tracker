@@ -6,6 +6,7 @@ import type {
   EventTagSuggestion,
   EventRepositoryPort,
   ListEventsCriteria,
+  PaginatedEventItem,
   PaginatedEvents,
 } from '../../../domain';
 import type { EventStatus } from '../../../domain/entities/event-status';
@@ -175,10 +176,40 @@ export class PrismaEventRepository implements EventRepositoryPort {
       }),
     ]);
 
+    const eventIds = rows.map((row) => row.id);
+    const commentCounts = await this.countCommentsByEventIds(eventIds);
+
     return {
-      items: rows.map((row) => EventPrismaMapper.toDomain(row)),
+      items: rows.map((row) => ({
+        event: EventPrismaMapper.toDomain(row),
+        commentCount: commentCounts[row.id] ?? 0,
+      })),
       total,
     };
+  }
+
+  private async countCommentsByEventIds(
+    eventIds: string[],
+  ): Promise<Record<string, number>> {
+    if (eventIds.length === 0) {
+      return {};
+    }
+
+    const rows = await this.prisma.eventComment.groupBy({
+      by: ['eventId'],
+      where: {
+        eventId: { in: eventIds },
+        deletedAt: null,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    return rows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.eventId] = row._count._all;
+      return acc;
+    }, {});
   }
 
   async searchTagsByName(
