@@ -171,8 +171,22 @@ export class PrismaEventRepository implements EventRepositoryPort {
       this.prisma.event.findMany({
         where,
         include: {
+          user: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+            },
+          },
           tags: {
             include: { tag: true },
+          },
+          _count: {
+            select: {
+              participants: {
+                where: { revokedAt: null },
+              },
+            },
           },
         },
         orderBy: { fromDateTime: 'desc' },
@@ -188,6 +202,8 @@ export class PrismaEventRepository implements EventRepositoryPort {
       items: rows.map((row) => ({
         event: EventPrismaMapper.toDomain(row),
         commentCount: commentCounts[row.id] ?? 0,
+        participantCount: row._count.participants,
+        creator: row.user,
       })),
       total,
     };
@@ -251,8 +267,44 @@ export class PrismaEventRepository implements EventRepositoryPort {
     userId: string,
     eventId: string,
   ): Promise<Event | null> {
+    return this.findByIdForOwner(userId, eventId);
+  }
+
+  async findByIdForOwner(
+    userId: string,
+    eventId: string,
+  ): Promise<Event | null> {
     const row = await this.prisma.event.findFirst({
       where: { id: eventId, userId, deletedAt: null },
+      include: {
+        tags: {
+          include: { tag: true },
+        },
+      },
+    });
+
+    if (!row) {
+      return null;
+    }
+
+    return EventPrismaMapper.toDomain(row);
+  }
+
+  async findByIdForParticipant(
+    participantId: string,
+    eventId: string,
+  ): Promise<Event | null> {
+    const row = await this.prisma.event.findFirst({
+      where: {
+        id: eventId,
+        deletedAt: null,
+        participants: {
+          some: {
+            id: participantId,
+            revokedAt: null,
+          },
+        },
+      },
       include: {
         tags: {
           include: { tag: true },

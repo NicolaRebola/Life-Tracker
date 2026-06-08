@@ -4,6 +4,7 @@ import {
   EVENT_REPOSITORY,
   EventComment,
   EventCommentValidationError,
+  type EventActor,
   type EventCommentRepositoryPort,
   type EventRepositoryPort,
 } from '../../domain';
@@ -28,10 +29,17 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
   async execute(
     command: CreateEventCommentCommand,
   ): Promise<CreateEventCommentResult> {
-    const event = await this.eventRepository.findByIdForUser(
-      command.userId,
-      command.eventId,
-    );
+    const actor = this.resolveActor(command);
+    const event =
+      actor.type === 'OWNER'
+        ? await this.eventRepository.findByIdForOwner(
+            actor.userId,
+            command.eventId,
+          )
+        : await this.eventRepository.findByIdForParticipant(
+            actor.participantId,
+            command.eventId,
+          );
 
     if (!event) {
       throw new EventNotFoundError();
@@ -41,7 +49,7 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
     const savedComment = await this.eventCommentRepository.save(comment);
 
     return {
-      comment: toEventCommentListItem(savedComment, command.userId),
+      comment: toEventCommentListItem(savedComment, actor),
     };
   }
 
@@ -52,6 +60,7 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
       return EventComment.create({
         eventId: command.eventId,
         userId: command.userId,
+        participantId: command.participantId,
         body: command.body,
       });
     } catch (error) {
@@ -64,5 +73,24 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
 
       throw error;
     }
+  }
+
+  private resolveActor(command: CreateEventCommentCommand): EventActor {
+    if (command.userId) {
+      return { type: 'OWNER', userId: command.userId };
+    }
+
+    if (command.participantId) {
+      return {
+        type: 'PARTICIPANT',
+        participantId: command.participantId,
+        email: '',
+      };
+    }
+
+    throw new CreateEventCommentValidationError('Autor inválido', [
+      'userId',
+      'participantId',
+    ]);
   }
 }

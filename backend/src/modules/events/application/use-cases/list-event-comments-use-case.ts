@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   EVENT_COMMENT_REPOSITORY,
   EVENT_REPOSITORY,
+  type EventActor,
   type EventCommentRepositoryPort,
   type EventRepositoryPort,
 } from '../../domain';
@@ -25,24 +26,51 @@ export class ListEventCommentsUseCase implements ListEventCommentsPort {
   async execute(
     command: ListEventCommentsCommand,
   ): Promise<ListEventCommentsResult> {
-    const event = await this.eventRepository.findByIdForUser(
-      command.userId,
-      command.eventId,
-    );
+    const actor = this.resolveActor(command);
+    const event =
+      actor.type === 'OWNER'
+        ? await this.eventRepository.findByIdForOwner(
+            actor.userId,
+            command.eventId,
+          )
+        : await this.eventRepository.findByIdForParticipant(
+            actor.participantId,
+            command.eventId,
+          );
 
     if (!event) {
       throw new EventNotFoundError();
     }
 
-    const comments = await this.eventCommentRepository.findManyByEventForUser(
-      command.userId,
-      command.eventId,
-    );
+    const comments =
+      actor.type === 'OWNER'
+        ? await this.eventCommentRepository.findManyByEventForUser(
+            actor.userId,
+            command.eventId,
+          )
+        : await this.eventCommentRepository.findManyByEventForParticipant(
+            actor.participantId,
+            command.eventId,
+          );
 
     return {
-      items: comments.map((comment) =>
-        toEventCommentListItem(comment, command.userId),
-      ),
+      items: comments.map((comment) => toEventCommentListItem(comment, actor)),
     };
+  }
+
+  private resolveActor(command: ListEventCommentsCommand): EventActor {
+    if (command.userId) {
+      return { type: 'OWNER', userId: command.userId };
+    }
+
+    if (command.participantId) {
+      return {
+        type: 'PARTICIPANT',
+        participantId: command.participantId,
+        email: '',
+      };
+    }
+
+    throw new EventNotFoundError();
   }
 }

@@ -15,6 +15,13 @@ const commentInclude = {
       email: true,
     },
   },
+  participant: {
+    select: {
+      id: true,
+      displayName: true,
+      email: true,
+    },
+  },
 } as const;
 
 @Injectable()
@@ -52,6 +59,31 @@ export class PrismaEventCommentRepository implements EventCommentRepositoryPort 
     return rows.map((row) => EventCommentPrismaMapper.toWithAuthor(row));
   }
 
+  async findManyByEventForParticipant(
+    participantId: string,
+    eventId: string,
+  ): Promise<EventCommentWithAuthor[]> {
+    const rows = await this.prisma.eventComment.findMany({
+      where: {
+        eventId,
+        deletedAt: null,
+        event: {
+          deletedAt: null,
+          participants: {
+            some: {
+              id: participantId,
+              revokedAt: null,
+            },
+          },
+        },
+      },
+      include: commentInclude,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return rows.map((row) => EventCommentPrismaMapper.toWithAuthor(row));
+  }
+
   async findByIdForUser(
     userId: string,
     eventId: string,
@@ -65,6 +97,36 @@ export class PrismaEventCommentRepository implements EventCommentRepositoryPort 
         event: {
           userId,
           deletedAt: null,
+        },
+      },
+      include: commentInclude,
+    });
+
+    if (!row) {
+      return null;
+    }
+
+    return EventCommentPrismaMapper.toWithAuthor(row);
+  }
+
+  async findByIdForParticipant(
+    participantId: string,
+    eventId: string,
+    commentId: string,
+  ): Promise<EventCommentWithAuthor | null> {
+    const row = await this.prisma.eventComment.findFirst({
+      where: {
+        id: commentId,
+        eventId,
+        deletedAt: null,
+        event: {
+          deletedAt: null,
+          participants: {
+            some: {
+              id: participantId,
+              revokedAt: null,
+            },
+          },
         },
       },
       include: commentInclude,

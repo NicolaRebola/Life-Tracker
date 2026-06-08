@@ -3,7 +3,8 @@ import { EventCommentValidationError } from '../errors/event-comment-validation.
 export type EventCommentPrimitives = {
   id?: string;
   eventId: string;
-  userId: string;
+  userId?: string | null;
+  participantId?: string | null;
   body: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -12,7 +13,8 @@ export type EventCommentPrimitives = {
 
 export type CreateEventCommentProps = {
   eventId: string;
-  userId: string;
+  userId?: string | null;
+  participantId?: string | null;
   body: string;
 };
 
@@ -27,8 +29,12 @@ export class EventComment {
     return this.props.eventId;
   }
 
-  get userId(): string {
+  get userId(): string | null | undefined {
     return this.props.userId;
+  }
+
+  get participantId(): string | null | undefined {
+    return this.props.participantId;
   }
 
   static create(props: CreateEventCommentProps): EventComment {
@@ -36,7 +42,8 @@ export class EventComment {
 
     return new EventComment({
       eventId: props.eventId,
-      userId: props.userId,
+      userId: props.userId ?? null,
+      participantId: props.participantId ?? null,
       body: props.body.trim(),
     });
   }
@@ -49,6 +56,7 @@ export class EventComment {
     EventComment.assertValid({
       eventId: this.props.eventId,
       userId: this.props.userId,
+      participantId: this.props.participantId,
       body,
     });
 
@@ -67,9 +75,13 @@ export class EventComment {
       throw new EventCommentValidationError('Evento inválido', ['eventId']);
     }
 
-    if (!props.userId?.trim()) {
-      throw new EventCommentValidationError('Usuario no identificado', [
+    const hasUser = Boolean(props.userId?.trim());
+    const hasParticipant = Boolean(props.participantId?.trim());
+
+    if (hasUser === hasParticipant) {
+      throw new EventCommentValidationError('Autor inválido', [
         'userId',
+        'participantId',
       ]);
     }
 
