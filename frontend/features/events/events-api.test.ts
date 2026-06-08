@@ -222,6 +222,7 @@ describe("eventListItemToFormValues", () => {
         { name: "universidad", label: "Universidad" },
         { name: "analisis", label: "Analisis" },
       ],
+      commentCount: 2,
     };
 
     const values = eventListItemToFormValues(event);
