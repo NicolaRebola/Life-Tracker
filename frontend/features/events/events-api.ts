@@ -224,6 +224,32 @@ export async function updateEventStatus(eventId: string, status: EventStatus) {
   return res.json() as Promise<{ event: { id: string; status: EventStatus } }>;
 }
 
+export class DeleteEventError extends EventsApiError {
+  constructor(
+    message: string,
+    status: number,
+    fields?: string[],
+  ) {
+    super(message, status, fields);
+    this.name = 'DeleteEventError';
+  }
+}
+
+export async function deleteEvent(eventId: string): Promise<void> {
+  const res = await fetch(`/api/events/${eventId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) {
+    const responseError = await res.json().catch(() => null);
+    throw new DeleteEventError(
+      responseError?.message ?? 'No se pudo eliminar el evento',
+      res.status,
+      responseError?.fields,
+    );
+  }
+}
+
 export async function searchEventTags(
   name: string,
 ): Promise<SearchEventTagsResponse> {

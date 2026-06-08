@@ -65,6 +65,7 @@ export class PrismaEventRepository implements EventRepositoryPort {
         where: {
           id: props.id,
           userId: props.userId,
+          deletedAt: null,
         },
         data: {
           name: eventData.name,
@@ -121,6 +122,7 @@ export class PrismaEventRepository implements EventRepositoryPort {
   async findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents> {
     const where: Prisma.EventWhereInput = {
       userId: criteria.userId,
+      deletedAt: null,
       ...(criteria.name
         ? {
             name: {
@@ -194,6 +196,7 @@ export class PrismaEventRepository implements EventRepositoryPort {
           some: {
             event: {
               userId,
+              deletedAt: null,
             },
           },
         },
@@ -213,7 +216,7 @@ export class PrismaEventRepository implements EventRepositoryPort {
     eventId: string,
   ): Promise<Event | null> {
     const row = await this.prisma.event.findFirst({
-      where: { id: eventId, userId },
+      where: { id: eventId, userId, deletedAt: null },
       include: {
         tags: {
           include: { tag: true },
@@ -245,12 +248,13 @@ export class PrismaEventRepository implements EventRepositoryPort {
           id: eventId,
           userId,
           status: fromStatus,
+          deletedAt: null,
         },
         data: { status: toStatus },
       });
 
       const row = await tx.event.findFirst({
-        where: { id: eventId, userId },
+        where: { id: eventId, userId, deletedAt: null },
         include: {
           tags: {
             include: { tag: true },
@@ -267,5 +271,35 @@ export class PrismaEventRepository implements EventRepositoryPort {
         applied: count > 0,
       };
     });
+  }
+
+  async softDelete(
+    userId: string,
+    eventId: string,
+    deletedAt: Date,
+  ): Promise<boolean> {
+    const { count } = await this.prisma.event.updateMany({
+      where: {
+        id: eventId,
+        userId,
+        deletedAt: null,
+      },
+      data: { deletedAt },
+    });
+
+    return count > 0;
+  }
+
+  async purgeDeletedBefore(cutoff: Date): Promise<number> {
+    const { count } = await this.prisma.event.deleteMany({
+      where: {
+        deletedAt: {
+          lt: cutoff,
+          not: null,
+        },
+      },
+    });
+
+    return count;
   }
 }

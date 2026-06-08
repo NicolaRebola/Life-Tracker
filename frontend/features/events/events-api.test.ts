@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createEvent,
   CreateEventError,
+  deleteEvent,
+  DeleteEventError,
   eventListItemToFormValues,
   listEvents,
   searchEventTags,
@@ -254,6 +256,63 @@ describe("updateEventStatus", () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ status: "DONE" }),
+    });
+  });
+});
+
+describe("deleteEvent", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends a delete request to the events BFF route", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(deleteEvent("event-1")).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith("/api/events/event-1", {
+      method: "DELETE",
+    });
+  });
+
+  it("throws a DeleteEventError when the BFF rejects the request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({
+          message: "Evento no encontrado",
+        }),
+      }),
+    );
+
+    await expect(deleteEvent("missing-event")).rejects.toMatchObject<DeleteEventError>({
+      name: "DeleteEventError",
+      message: "Evento no encontrado",
+      status: 404,
+    });
+  });
+
+  it("uses a fallback error message when the BFF response body cannot be parsed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new Error("Invalid JSON");
+        },
+      }),
+    );
+
+    await expect(deleteEvent("event-1")).rejects.toMatchObject({
+      message: "No se pudo eliminar el evento",
+      status: 500,
     });
   });
 });

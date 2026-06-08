@@ -32,6 +32,8 @@ describe('ListEventsUseCase', () => {
       searchTagsByName: jest.fn(),
       findByIdForUser: jest.fn(),
       applyStatusTransition: jest.fn(),
+      softDelete: jest.fn(),
+      purgeDeletedBefore: jest.fn(),
     };
     useCase = new ListEventsUseCase(repository);
   });

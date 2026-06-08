@@ -10,6 +10,7 @@ type PrismaEventWithTags = {
   fromDateTime: Date;
   toDateTime: Date;
   status: EventStatus;
+  deletedAt: Date | null;
   tags: Array<{
     tag: {
       name: string;
@@ -46,6 +47,7 @@ export class EventPrismaMapper {
       fromDateTime: event.fromDateTime,
       toDateTime: event.toDateTime,
       status: event.status,
+      deletedAt: event.deletedAt,
       tags: event.tags.map(({ tag }) => ({
         name: tag.name,
         label: tag.label,
