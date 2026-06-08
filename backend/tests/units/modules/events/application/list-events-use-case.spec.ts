@@ -53,6 +53,8 @@ describe('ListEventsUseCase', () => {
       name: undefined,
       status: undefined,
       tags: undefined,
+      rangeStart: undefined,
+      rangeEnd: undefined,
       page: 1,
       limit: 10,
     });
@@ -87,6 +89,8 @@ describe('ListEventsUseCase', () => {
       name: 'clase',
       status: 'IN_PROGRESS',
       tags: ['eti', 'queta 1'],
+      rangeStart: undefined,
+      rangeEnd: undefined,
       page: 2,
       limit: 5,
     });
@@ -124,6 +128,49 @@ describe('ListEventsUseCase', () => {
       }),
     ).rejects.toMatchObject<ListEventsValidationError>({
       fields: ['status'],
+    } as ListEventsValidationError);
+
+    expect(findMany).not.toHaveBeenCalled();
+  });
+
+  it('passes normalized date range filters to the repository', async () => {
+    await useCase.execute({
+      userId: 'user-1',
+      fromDateTime: '2026-06-01T00:00:00.000Z',
+      toDateTime: '2026-07-01T00:00:00.000Z',
+    });
+
+    expect(findMany).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: undefined,
+      status: undefined,
+      tags: undefined,
+      rangeStart: new Date('2026-06-01T00:00:00.000Z'),
+      rangeEnd: new Date('2026-07-01T00:00:00.000Z'),
+      page: 1,
+      limit: 500,
+    });
+  });
+
+  it('rejects invalid date range filters', async () => {
+    await expect(
+      useCase.execute({
+        userId: 'user-1',
+        fromDateTime: 'invalid-date',
+        toDateTime: '2026-07-01T00:00:00.000Z',
+      }),
+    ).rejects.toMatchObject<ListEventsValidationError>({
+      fields: ['fromDateTime'],
+    } as ListEventsValidationError);
+
+    await expect(
+      useCase.execute({
+        userId: 'user-1',
+        fromDateTime: '2026-07-01T00:00:00.000Z',
+        toDateTime: '2026-06-01T00:00:00.000Z',
+      }),
+    ).rejects.toMatchObject<ListEventsValidationError>({
+      fields: ['fromDateTime', 'toDateTime'],
     } as ListEventsValidationError);
 
     expect(findMany).not.toHaveBeenCalled();

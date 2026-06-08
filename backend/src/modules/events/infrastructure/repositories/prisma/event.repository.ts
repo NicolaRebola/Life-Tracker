@@ -156,6 +156,12 @@ export class PrismaEventRepository implements EventRepositoryPort {
             },
           }
         : {}),
+      ...(criteria.rangeStart && criteria.rangeEnd
+        ? {
+            fromDateTime: { lt: criteria.rangeEnd },
+            toDateTime: { gt: criteria.rangeStart },
+          }
+        : {}),
     };
 
     const skip = (criteria.page - 1) * criteria.limit;

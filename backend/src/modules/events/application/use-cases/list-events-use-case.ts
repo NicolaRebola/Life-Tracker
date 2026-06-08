@@ -9,6 +9,16 @@ import type {
 } from '../ports/inbound/list-events.port';
 
 const ALLOWED_LIMITS = [5, 10, 20, 50] as const;
+const CALENDAR_LIMIT = 500;
+
+function parseOptionalIsoDate(value: string | undefined): Date | undefined {
+  if (!value?.trim()) return undefined;
+
+  const date = new Date(value.trim());
+  if (Number.isNaN(date.getTime())) return undefined;
+
+  return date;
+}
 
 @Injectable()
 export class ListEventsUseCase implements ListEventsPort {
@@ -18,14 +28,40 @@ export class ListEventsUseCase implements ListEventsPort {
   ) {}
 
   async execute(command: ListEventsCommand): Promise<ListEventsResult> {
+    const rangeStart = parseOptionalIsoDate(command.fromDateTime);
+    const rangeEnd = parseOptionalIsoDate(command.toDateTime);
+    const hasRangeFilter = Boolean(command.fromDateTime || command.toDateTime);
+
+    if (hasRangeFilter) {
+      if (!rangeStart) {
+        throw new ListEventsValidationError('Fecha inválida', ['fromDateTime']);
+      }
+
+      if (!rangeEnd) {
+        throw new ListEventsValidationError('Fecha inválida', ['toDateTime']);
+      }
+
+      if (rangeStart >= rangeEnd) {
+        throw new ListEventsValidationError('El rango de fechas es inválido', [
+          'fromDateTime',
+          'toDateTime',
+        ]);
+      }
+    }
+
     const page = command.page ?? 1;
-    const limit = command.limit ?? 10;
+    const defaultLimit = hasRangeFilter ? CALENDAR_LIMIT : 10;
+    const limit = command.limit ?? defaultLimit;
 
     if (!Number.isInteger(page) || page < 1) {
       throw new ListEventsValidationError('Página inválida', ['page']);
     }
 
-    if (!ALLOWED_LIMITS.includes(limit as (typeof ALLOWED_LIMITS)[number])) {
+    const allowedLimits: number[] = hasRangeFilter
+      ? [...ALLOWED_LIMITS, CALENDAR_LIMIT]
+      : [...ALLOWED_LIMITS];
+
+    if (!allowedLimits.includes(limit)) {
       throw new ListEventsValidationError('Límite inválido', ['limit']);
     }
 
@@ -43,6 +79,8 @@ export class ListEventsUseCase implements ListEventsPort {
       name: name || undefined,
       status: command.status,
       tags: tags?.length ? tags : undefined,
+      rangeStart,
+      rangeEnd,
       page,
       limit,
     });

@@ -5,7 +5,7 @@ import Loader from "@/components/atoms/Loader/Loader";
 import ConfirmDeleteEventDialog from "@/components/molecules/ConfirmDeleteEventDialog";
 import EventCommentsSheet from "@/components/organisms/EventCommentsSheet";
 import { KanbanLane } from "@/components/organisms/KanbanLane";
-import Filters from "@/components/organisms/Filters";
+import EventFilters from "@/components/organisms/EventFilters";
 import { Toast } from "@/components/tailgrids/core/toast";
 import {
   EVENT_STATUSES,
@@ -230,7 +230,7 @@ export default function KanbanBoard({
         </div>
       )}
 
-      <Filters
+      <EventFilters
         name={filters.name}
         status={filters.status}
         tags={filters.tags}
