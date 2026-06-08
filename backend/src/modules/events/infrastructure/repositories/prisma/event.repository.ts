@@ -51,6 +51,73 @@ export class PrismaEventRepository implements EventRepositoryPort {
     return EventPrismaMapper.toDomain(savedEvent);
   }
 
+  async update(event: Event): Promise<Event> {
+    const props = event.toPrimitives();
+
+    if (!props.id) {
+      throw new Error('Cannot update an event without id');
+    }
+
+    const { event: eventData, tags } = EventPrismaMapper.toPersistence(event);
+
+    const updatedEvent = await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.event.updateMany({
+        where: {
+          id: props.id,
+          userId: props.userId,
+        },
+        data: {
+          name: eventData.name,
+          description: eventData.description,
+          notes: eventData.notes,
+          fromDateTime: eventData.fromDateTime,
+          toDateTime: eventData.toDateTime,
+        },
+      });
+
+      if (count === 0) {
+        return null;
+      }
+
+      await tx.eventTag.deleteMany({
+        where: { eventId: props.id },
+      });
+
+      for (const tag of tags) {
+        const savedTag = await tx.tag.upsert({
+          where: { name: tag.name },
+          update: {},
+          create: {
+            name: tag.name,
+            label: tag.label,
+          },
+        });
+
+        await tx.eventTag.create({
+          data: {
+            eventId: props.id!,
+            tagId: savedTag.id,
+          },
+        });
+      }
+
+      return tx.event.findUniqueOrThrow({
+        where: { id: props.id },
+        include: {
+          tags: {
+            include: { tag: true },
+          },
+        },
+      });
+    });
+
+    if (!updatedEvent) {
+      throw new Error('Event not found during update');
+    }
+
+    return EventPrismaMapper.toDomain(updatedEvent);
+  }
+
   async findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents> {
     const where: Prisma.EventWhereInput = {
       userId: criteria.userId,

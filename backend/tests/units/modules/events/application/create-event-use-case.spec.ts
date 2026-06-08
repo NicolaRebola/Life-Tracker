@@ -20,6 +20,7 @@ describe('CreateEventUseCase', () => {
     );
     repository = {
       save,
+      update: jest.fn(),
       findMany: jest.fn(),
       searchTagsByName: jest.fn(),
       findByIdForUser: jest.fn(),

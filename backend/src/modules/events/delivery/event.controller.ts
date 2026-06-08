@@ -17,20 +17,24 @@ import { CREATE_EVENT } from '../application/ports/inbound/create-event.port';
 import { LIST_EVENTS } from '../application/ports/inbound/list-events.port';
 import { SEARCH_EVENT_TAGS } from '../application/ports/inbound/search-event-tags.port';
 import { UPDATE_EVENT_STATUS } from '../application/ports/inbound/update-event-status.port';
+import { UPDATE_EVENT } from '../application/ports/inbound/update-event.port';
 import { CreateEventValidationError } from '../application/errors/create-event-validation.error';
 import { EventNotFoundError } from '../application/errors/event-not-found.error';
 import { ListEventsValidationError } from '../application/errors/list-events-validation.error';
 import { UpdateEventStatusConflictError } from '../application/errors/update-event-status-conflict.error';
 import { UpdateEventStatusValidationError } from '../application/errors/update-event-status-validation.error';
+import { UpdateEventValidationError } from '../application/errors/update-event-validation.error';
 import { SessionGuard } from 'src/modules/session/application/session.guard';
 import type { AuthenticatedRequest } from 'src/modules/session/application/session.guard';
 import type { CreateEventPort } from '../application/ports/inbound/create-event.port';
 import type { ListEventsPort } from '../application/ports/inbound/list-events.port';
 import type { SearchEventTagsPort } from '../application/ports/inbound/search-event-tags.port';
 import type { UpdateEventStatusPort } from '../application/ports/inbound/update-event-status.port';
+import type { UpdateEventPort } from '../application/ports/inbound/update-event.port';
 import type { CreateEventDto } from './dto/create-event.dto';
 import type { ListEventsQueryDto } from './dto/list-events-query.dto';
 import type { UpdateEventStatusDto } from './dto/update-event-status.dto';
+import type { UpdateEventDto } from './dto/update-event.dto';
 import type { EventStatus } from '../domain/entities/event-status';
 
 @Controller('events')
@@ -45,6 +49,8 @@ export class EventController {
     private readonly searchEventTagsUseCase: SearchEventTagsPort,
     @Inject(UPDATE_EVENT_STATUS)
     private readonly updateEventStatusUseCase: UpdateEventStatusPort,
+    @Inject(UPDATE_EVENT)
+    private readonly updateEventUseCase: UpdateEventPort,
   ) {}
 
   @Post()
@@ -173,6 +179,44 @@ export class EventController {
             requestedStatus: error.requestedStatus,
           },
           HttpStatus.CONFLICT,
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  @Patch(':id')
+  async updateEvent(
+    @Param('id') eventId: string,
+    @Body() body: UpdateEventDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      const event = await this.updateEventUseCase.execute({
+        userId: req.user.id,
+        eventId,
+        fromDateTime: body.fromDateTime,
+        toDateTime: body.toDateTime,
+        name: body.name,
+        description: body.description,
+        notes: body.notes,
+        tags: body.tags,
+      });
+
+      return { event };
+    } catch (error) {
+      if (error instanceof UpdateEventValidationError) {
+        throw new HttpException(
+          { message: error.message, fields: error.fields },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof EventNotFoundError) {
+        throw new HttpException(
+          { message: error.message },
+          HttpStatus.NOT_FOUND,
         );
       }
 

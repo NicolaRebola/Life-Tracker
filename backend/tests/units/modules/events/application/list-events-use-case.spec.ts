@@ -27,6 +27,7 @@ describe('ListEventsUseCase', () => {
     });
     repository = {
       save: jest.fn(),
+      update: jest.fn(),
       findMany,
       searchTagsByName: jest.fn(),
       findByIdForUser: jest.fn(),
