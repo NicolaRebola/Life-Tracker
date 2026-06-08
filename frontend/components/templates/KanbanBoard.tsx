@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Loader from "@/components/atoms/Loader/Loader";
 import ConfirmDeleteEventDialog from "@/components/molecules/ConfirmDeleteEventDialog";
+import EventCommentsSheet from "@/components/organisms/EventCommentsSheet";
 import { KanbanLane } from "@/components/organisms/KanbanLane";
 import Filters from "@/components/organisms/Filters";
 import { Toast } from "@/components/tailgrids/core/toast";
@@ -58,6 +59,8 @@ export default function KanbanBoard({
   const [reloadNonce, setReloadNonce] = useState(0);
   const [toast, setToast] = useState<ToastState>(null);
   const [pendingDeleteEvent, setPendingDeleteEvent] = useState<EventListItem | null>(null);
+  const [commentingEvent, setCommentingEvent] = useState<EventListItem | null>(null);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -147,6 +150,27 @@ export default function KanbanBoard({
     if (isUpdating || isDeleting) return;
     setPendingDeleteEvent(event);
   }
+
+  function handleAddComment(event: EventListItem) {
+    if (isUpdating || isDeleting) return;
+    setCommentingEvent(event);
+    setIsCommentsOpen(true);
+  }
+
+  const handleCommentCountChange = useCallback((eventId: string, commentCount: number) => {
+    setItems((currentItems) =>
+      currentItems.map((event) =>
+        event.id === eventId && event.commentCount !== commentCount
+          ? { ...event, commentCount }
+          : event,
+      ),
+    );
+    setCommentingEvent((currentEvent) =>
+      currentEvent?.id === eventId && currentEvent.commentCount !== commentCount
+        ? { ...currentEvent, commentCount }
+        : currentEvent,
+    );
+  }, []);
 
   async function handleConfirmDelete() {
     if (!pendingDeleteEvent) return;
@@ -249,6 +273,7 @@ export default function KanbanBoard({
               onStatusChange={handleStatusChange}
               onEditEvent={onEditEvent}
               onDeleteEvent={handleDeleteRequest}
+              onAddComment={handleAddComment}
             />
           </div>
 
@@ -266,6 +291,7 @@ export default function KanbanBoard({
                 onStatusChange={handleStatusChange}
                 onEditEvent={onEditEvent}
                 onDeleteEvent={handleDeleteRequest}
+                onAddComment={handleAddComment}
               />
             ))}
           </div>
@@ -284,6 +310,18 @@ export default function KanbanBoard({
         onConfirm={() => {
           void handleConfirmDelete();
         }}
+      />
+
+      <EventCommentsSheet
+        event={commentingEvent}
+        isOpen={isCommentsOpen}
+        onOpenChange={(open) => {
+          setIsCommentsOpen(open);
+          if (!open) {
+            setCommentingEvent(null);
+          }
+        }}
+        onCommentCountChange={handleCommentCountChange}
       />
     </div>
   );
