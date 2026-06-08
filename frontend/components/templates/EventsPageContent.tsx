@@ -32,6 +32,12 @@ export default function EventsPageContent() {
       <KanbanBoard
         refreshKey={refreshKey}
         onEditEvent={handleEditEvent}
+        onEventDeleted={(eventId) => {
+          if (editingEvent?.id === eventId) {
+            setIsEditOpen(false);
+            setEditingEvent(null);
+          }
+        }}
       />
       <EditEventSheet
         event={editingEvent}

@@ -18,6 +18,7 @@ type EventCardProps = {
   onDragEnd?: () => void;
   onStatusChange?: (eventId: string, status: EventStatus) => void;
   onEdit?: (event: EventListItem) => void;
+  onDelete?: (event: EventListItem) => void;
 };
 
 const STATUS_OPTIONS: EventStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
@@ -52,6 +53,7 @@ export default function EventCard({
   onDragEnd,
   onStatusChange,
   onEdit,
+  onDelete,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -122,10 +124,13 @@ export default function EventCard({
 
               <button
                 type="button"
-                disabled
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-400"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50"
+                onClick={() => {
+                  onDelete?.(event);
+                  setIsMenuOpen(false);
+                }}
               >
-                <Trash1 className="size-4 text-red-300" />
+                <Trash1 className="size-4 text-red-500" />
                 Eliminar
               </button>
               <button

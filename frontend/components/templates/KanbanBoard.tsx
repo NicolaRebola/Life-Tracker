@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Loader from "@/components/atoms/Loader/Loader";
+import ConfirmDeleteEventDialog from "@/components/molecules/ConfirmDeleteEventDialog";
 import { KanbanLane } from "@/components/organisms/KanbanLane";
 import Filters from "@/components/organisms/Filters";
 import { Toast } from "@/components/tailgrids/core/toast";
@@ -11,6 +12,7 @@ import {
   type EventStatus,
 } from "@/features/events/event-status";
 import {
+  deleteEvent,
   listEvents,
   updateEventStatus,
   type EventListItem,
@@ -26,6 +28,7 @@ type ToastState = {
 type KanbanBoardProps = {
   refreshKey?: number;
   onEditEvent?: (event: EventListItem) => void;
+  onEventDeleted?: (eventId: string) => void;
 };
 
 const defaultFilters: Required<Pick<ListEventsFilters, "name" | "status" | "tags">> & {
@@ -39,7 +42,11 @@ const defaultFilters: Required<Pick<ListEventsFilters, "name" | "status" | "tags
   limit: 10,
 };
 
-export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoardProps) {
+export default function KanbanBoard({
+  refreshKey = 0,
+  onEditEvent,
+  onEventDeleted,
+}: KanbanBoardProps) {
   const [filters, setFilters] = useState(defaultFilters);
   const [mobileLane, setMobileLane] = useState<EventStatus>("TODO");
   const [items, setItems] = useState<EventListItem[]>([]);
@@ -50,6 +57,8 @@ export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoard
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
   const [toast, setToast] = useState<ToastState>(null);
+  const [pendingDeleteEvent, setPendingDeleteEvent] = useState<EventListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -134,6 +143,42 @@ export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoard
     await handleStatusChange(draggedEventId, targetStatus);
   }
 
+  function handleDeleteRequest(event: EventListItem) {
+    if (isUpdating || isDeleting) return;
+    setPendingDeleteEvent(event);
+  }
+
+  async function handleConfirmDelete() {
+    if (!pendingDeleteEvent) return;
+
+    const eventId = pendingDeleteEvent.id;
+    const previousItems = items;
+    const previousTotal = total;
+
+    setIsDeleting(true);
+    setIsUpdating(true);
+    setItems((currentItems) => currentItems.filter((event) => event.id !== eventId));
+    setTotal((currentTotal) => Math.max(0, currentTotal - 1));
+
+    try {
+      await deleteEvent(eventId);
+      setToast({ variant: "success", message: "Evento eliminado" });
+      setPendingDeleteEvent(null);
+      onEventDeleted?.(eventId);
+      setReloadNonce((value) => value + 1);
+    } catch (error) {
+      setItems(previousItems);
+      setTotal(previousTotal);
+      const message =
+        error instanceof Error ? error.message : "No se pudo eliminar el evento";
+      setToast({ variant: "error", message });
+    } finally {
+      setIsDeleting(false);
+      setIsUpdating(false);
+      setDraggedEventId(null);
+    }
+  }
+
   function updateFilter<K extends keyof typeof defaultFilters>(
     key: K,
     value: (typeof defaultFilters)[K],
@@ -169,7 +214,7 @@ export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoard
         limit={filters.limit}
         total={total}
         totalPages={totalPages}
-        isDisabled={isLoading || isUpdating}
+        isDisabled={isLoading || isUpdating || isDeleting}
         onNameChange={(name) => updateFilter("name", name)}
         onStatusChange={(status) => updateFilter("status", status)}
         onTagsChange={(tags) => updateFilter("tags", tags)}
@@ -203,6 +248,7 @@ export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoard
               events={eventsByStatus[mobileLane]}
               onStatusChange={handleStatusChange}
               onEditEvent={onEditEvent}
+              onDeleteEvent={handleDeleteRequest}
             />
           </div>
 
@@ -219,11 +265,26 @@ export default function KanbanBoard({ refreshKey = 0, onEditEvent }: KanbanBoard
                 onDrop={handleDrop}
                 onStatusChange={handleStatusChange}
                 onEditEvent={onEditEvent}
+                onDeleteEvent={handleDeleteRequest}
               />
             ))}
           </div>
         </>
       )}
+
+      <ConfirmDeleteEventDialog
+        event={pendingDeleteEvent}
+        isOpen={pendingDeleteEvent !== null}
+        isDeleting={isDeleting}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) {
+            setPendingDeleteEvent(null);
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmDelete();
+        }}
+      />
     </div>
   );
 }
