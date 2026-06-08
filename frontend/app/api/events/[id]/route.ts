@@ -94,3 +94,48 @@ export async function PATCH(
   const data = await response.json().catch(() => null);
   return NextResponse.json(data ?? { ok: true });
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  if (!sessionToken) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  const response = await fetch(`${process.env.API_URL}/api/v1/events/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'User-Agent': req.headers.get('user-agent') ?? '',
+      Cookie: `${SESSION_COOKIE_NAME}=${sessionToken}`,
+    },
+  }).catch(() => null);
+
+  if (!response) {
+    return NextResponse.json({ message: 'No se pudo conectar con el servidor' }, { status: 502 });
+  }
+
+  if (response.status === 401) {
+    return NextResponse.json({ message: 'Vuelve a iniciar sesión' }, { status: 401 });
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    const message =
+      typeof error?.message === 'string'
+        ? error.message
+        : 'Oops... algo salió mal.';
+
+    return NextResponse.json(
+      {
+        message,
+        fields: Array.isArray(error?.fields) ? error.fields : undefined,
+      },
+      { status: response.status },
+    );
+  }
+
+  return new NextResponse(null, { status: 204 });
+}
