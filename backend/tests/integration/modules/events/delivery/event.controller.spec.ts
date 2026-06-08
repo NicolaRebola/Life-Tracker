@@ -8,7 +8,9 @@ import { LIST_EVENTS } from 'src/modules/events/application/ports/inbound/list-e
 import { SEARCH_EVENT_TAGS } from 'src/modules/events/application/ports/inbound/search-event-tags.port';
 import { UPDATE_EVENT_STATUS } from 'src/modules/events/application/ports/inbound/update-event-status.port';
 import { UPDATE_EVENT } from 'src/modules/events/application/ports/inbound/update-event.port';
+import { DELETE_EVENT } from 'src/modules/events/application/ports/inbound/delete-event.port';
 import { CreateEventValidationError } from 'src/modules/events/application/errors/create-event-validation.error';
+import { DeleteEventValidationError } from 'src/modules/events/application/errors/delete-event-validation.error';
 import { EventNotFoundError } from 'src/modules/events/application/errors/event-not-found.error';
 import { ListEventsValidationError } from 'src/modules/events/application/errors/list-events-validation.error';
 import { UpdateEventStatusConflictError } from 'src/modules/events/application/errors/update-event-status-conflict.error';
@@ -26,6 +28,7 @@ describe('EventController (integration)', () => {
   let searchEventTagsUseCase: { execute: jest.Mock };
   let updateEventStatusUseCase: { execute: jest.Mock };
   let updateEventUseCase: { execute: jest.Mock };
+  let deleteEventUseCase: { execute: jest.Mock };
 
   beforeEach(async () => {
     createEventUseCase = {
@@ -73,6 +76,9 @@ describe('EventController (integration)', () => {
         tags: [{ name: 'universidad', label: 'Universidad' }],
       }),
     };
+    deleteEventUseCase = {
+      execute: jest.fn().mockResolvedValue(undefined),
+    };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [EventController],
@@ -96,6 +102,10 @@ describe('EventController (integration)', () => {
         {
           provide: UPDATE_EVENT,
           useValue: updateEventUseCase,
+        },
+        {
+          provide: DELETE_EVENT,
+          useValue: deleteEventUseCase,
         },
       ],
     })
@@ -370,6 +380,39 @@ describe('EventController (integration)', () => {
       .expect(({ body }: { body: { message: string; fields: string[] } }) => {
         expect(body.message).toBe('El nombre es requerido');
         expect(body.fields).toEqual(['name']);
+      });
+  });
+
+  it('deletes an event for the authenticated user', async () => {
+    await request(app.getHttpServer() as Server)
+      .delete('/events/event-1')
+      .expect(204);
+
+    expect(deleteEventUseCase.execute).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+    });
+  });
+
+  it('maps not found errors when deleting an event', async () => {
+    deleteEventUseCase.execute.mockRejectedValueOnce(new EventNotFoundError());
+
+    await request(app.getHttpServer() as Server)
+      .delete('/events/missing-event')
+      .expect(404);
+  });
+
+  it('maps delete validation errors to bad request responses', async () => {
+    deleteEventUseCase.execute.mockRejectedValueOnce(
+      new DeleteEventValidationError('Evento inválido', ['eventId']),
+    );
+
+    await request(app.getHttpServer() as Server)
+      .delete('/events/event-1')
+      .expect(400)
+      .expect(({ body }: { body: { message: string; fields: string[] } }) => {
+        expect(body.message).toBe('Evento inválido');
+        expect(body.fields).toEqual(['eventId']);
       });
   });
 });
