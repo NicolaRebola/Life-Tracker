@@ -47,4 +47,10 @@ export interface EventRepositoryPort {
   applyStatusTransition(
     command: ApplyStatusTransitionCommand,
   ): Promise<EventStatusTransitionWriteResult>;
+  softDelete(
+    userId: string,
+    eventId: string,
+    deletedAt: Date,
+  ): Promise<boolean>;
+  purgeDeletedBefore(cutoff: Date): Promise<number>;
 }

@@ -18,6 +18,7 @@ export type EventPrimitives = {
   toDateTime: Date;
   status: EventStatus;
   tags: TagPrimitives[];
+  deletedAt?: Date | null;
 };
 
 export type CreateEventProps = {
