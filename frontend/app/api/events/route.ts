@@ -12,7 +12,7 @@ type CreateEventRequestBody = {
 };
 
 const datetimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
-const ALLOWED_LIMITS = new Set([5, 10, 20, 50]);
+const ALLOWED_LIMITS = new Set([5, 10, 20, 50, 500]);
 const ALLOWED_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE']);
 
 function parseDate(value: unknown) {
@@ -22,6 +22,15 @@ function parseDate(value: unknown) {
   if (!dateStr || !datetimeRegex.test(dateStr)) return null;
 
   const datetime = new Date(dateStr);
+  if (Number.isNaN(datetime.getTime())) return null;
+
+  return datetime.toISOString();
+}
+
+function parseIsoDateParam(value: string | null) {
+  if (!value?.trim()) return null;
+
+  const datetime = new Date(value.trim());
   if (Number.isNaN(datetime.getTime())) return null;
 
   return datetime.toISOString();
@@ -46,8 +55,47 @@ function buildBackendQuery(searchParams: URLSearchParams) {
   const tags = searchParams.get('tags')?.trim();
   if (tags) params.set('tags', tags);
 
+  const fromDateTimeParam = searchParams.get('fromDateTime');
+  const toDateTimeParam = searchParams.get('toDateTime');
+  const hasRangeFilter = Boolean(fromDateTimeParam || toDateTimeParam);
+
+  if (hasRangeFilter) {
+    const fromDateTime = parseIsoDateParam(fromDateTimeParam);
+    const toDateTime = parseIsoDateParam(toDateTimeParam);
+
+    if (!fromDateTime) {
+      return {
+        error: NextResponse.json(
+          { message: 'Fecha inválida', fields: ['fromDateTime'] },
+          { status: 400 },
+        ),
+      };
+    }
+
+    if (!toDateTime) {
+      return {
+        error: NextResponse.json(
+          { message: 'Fecha inválida', fields: ['toDateTime'] },
+          { status: 400 },
+        ),
+      };
+    }
+
+    if (new Date(fromDateTime) >= new Date(toDateTime)) {
+      return {
+        error: NextResponse.json(
+          { message: 'El rango de fechas es inválido', fields: ['fromDateTime', 'toDateTime'] },
+          { status: 400 },
+        ),
+      };
+    }
+
+    params.set('fromDateTime', fromDateTime);
+    params.set('toDateTime', toDateTime);
+  }
+
   const page = Number(searchParams.get('page') ?? '1');
-  const limit = Number(searchParams.get('limit') ?? '10');
+  const limit = Number(searchParams.get('limit') ?? (hasRangeFilter ? '500' : '10'));
 
   if (!Number.isInteger(page) || page < 1) {
     return { error: NextResponse.json({ message: 'Página inválida', fields: ['page'] }, { status: 400 }) };

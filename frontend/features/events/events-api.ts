@@ -34,6 +34,8 @@ export type ListEventsFilters = {
   name?: string;
   status?: EventStatus | '';
   tags?: string;
+  fromDateTime?: string;
+  toDateTime?: string;
   page?: number;
   limit?: number;
 };
@@ -134,6 +136,9 @@ function buildListEventsQuery(filters: ListEventsFilters = {}) {
     .map((tag) => tag.trim())
     .filter(Boolean);
   if (tags?.length) params.set('tags', tags.join(','));
+
+  if (filters.fromDateTime) params.set('fromDateTime', filters.fromDateTime);
+  if (filters.toDateTime) params.set('toDateTime', filters.toDateTime);
 
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));

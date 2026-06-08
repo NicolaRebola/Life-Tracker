@@ -128,6 +128,31 @@ describe("listEvents", () => {
     );
   });
 
+  it("requests events filtered by date range from the BFF", async () => {
+    const responseBody = {
+      items: [],
+      pagination: { page: 1, limit: 500, total: 0, totalPages: 0 },
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => responseBody,
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      listEvents({
+        fromDateTime: "2026-06-01T00:00:00.000Z",
+        toDateTime: "2026-07-01T00:00:00.000Z",
+        limit: 500,
+      }),
+    ).resolves.toEqual(responseBody);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/events?fromDateTime=2026-06-01T00%3A00%3A00.000Z&toDateTime=2026-07-01T00%3A00%3A00.000Z&limit=500",
+    );
+  });
+
   it("throws an EventsApiError when listing fails", async () => {
     vi.stubGlobal(
       "fetch",
