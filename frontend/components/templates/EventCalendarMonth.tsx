@@ -7,6 +7,7 @@ import CalendarDayEventsPanel from "@/components/organisms/CalendarDayEventsPane
 import CalendarMonthGrid from "@/components/organisms/CalendarMonthGrid";
 import CalendarToolbar from "@/components/molecules/CalendarToolbar";
 import EventCommentsSheet from "@/components/organisms/EventCommentsSheet";
+import EventParticipantsSheet from "@/components/organisms/EventParticipantsSheet";
 import { Toast } from "@/components/tailgrids/core/toast";
 import {
   addMonths,
@@ -48,6 +49,8 @@ export default function EventCalendarMonth({
   const [pendingDeleteEvent, setPendingDeleteEvent] = useState<EventListItem | null>(null);
   const [commentingEvent, setCommentingEvent] = useState<EventListItem | null>(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [participantsEvent, setParticipantsEvent] = useState<EventListItem | null>(null);
+  const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const year = visibleMonth.getFullYear();
@@ -107,6 +110,21 @@ export default function EventCalendarMonth({
     setCommentingEvent((currentEvent) =>
       currentEvent?.id === eventId && currentEvent.commentCount !== commentCount
         ? { ...currentEvent, commentCount }
+        : currentEvent,
+    );
+  }, []);
+
+  const handleParticipantCountChange = useCallback((eventId: string, participantCount: number) => {
+    setItems((currentItems) =>
+      currentItems.map((event) =>
+        event.id === eventId && event.participantCount !== participantCount
+          ? { ...event, participantCount }
+          : event,
+      ),
+    );
+    setParticipantsEvent((currentEvent) =>
+      currentEvent?.id === eventId && currentEvent.participantCount !== participantCount
+        ? { ...currentEvent, participantCount }
         : currentEvent,
     );
   }, []);
@@ -193,6 +211,10 @@ export default function EventCalendarMonth({
               setCommentingEvent(event);
               setIsCommentsOpen(true);
             }}
+            onManageParticipants={(event) => {
+              setParticipantsEvent(event);
+              setIsParticipantsOpen(true);
+            }}
             onDeleteEvent={setPendingDeleteEvent}
           />
         </div>
@@ -222,6 +244,18 @@ export default function EventCalendarMonth({
           }
         }}
         onCommentCountChange={handleCommentCountChange}
+      />
+
+      <EventParticipantsSheet
+        event={participantsEvent}
+        isOpen={isParticipantsOpen}
+        onOpenChange={(open) => {
+          setIsParticipantsOpen(open);
+          if (!open) {
+            setParticipantsEvent(null);
+          }
+        }}
+        onParticipantCountChange={handleParticipantCountChange}
       />
     </div>
   );

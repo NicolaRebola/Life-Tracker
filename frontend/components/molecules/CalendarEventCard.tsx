@@ -9,6 +9,7 @@ type CalendarEventCardProps = {
   event: EventListItem;
   onEdit?: (event: EventListItem) => void;
   onAddComment?: (event: EventListItem) => void;
+  onManageParticipants?: (event: EventListItem) => void;
   onDelete?: (event: EventListItem) => void;
 };
 
@@ -16,6 +17,7 @@ export default function CalendarEventCard({
   event,
   onEdit,
   onAddComment,
+  onManageParticipants,
   onDelete,
 }: CalendarEventCardProps) {
   return (
@@ -32,8 +34,11 @@ export default function CalendarEventCard({
         <p className="mt-1 text-xs text-gray-600">
           {formatCompactEventTime(event.fromDateTime, event.toDateTime)}
         </p>
+        <p className="mt-1 text-xs text-gray-500">
+          Creado por {event.creator.displayName || event.creator.email}
+        </p>
       </button>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <Button
           type="button"
           appearance="outline"
@@ -42,6 +47,15 @@ export default function CalendarEventCard({
           onClick={() => onAddComment?.(event)}
         >
           Comentarios ({event.commentCount})
+        </Button>
+        <Button
+          type="button"
+          appearance="outline"
+          variant="ghost"
+          size="sm"
+          onClick={() => onManageParticipants?.(event)}
+        >
+          Participantes ({event.participantCount})
         </Button>
         <Button
           type="button"

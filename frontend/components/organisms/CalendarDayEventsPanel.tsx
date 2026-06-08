@@ -8,6 +8,7 @@ type CalendarDayEventsPanelProps = {
   events: EventListItem[];
   onEditEvent?: (event: EventListItem) => void;
   onAddComment?: (event: EventListItem) => void;
+  onManageParticipants?: (event: EventListItem) => void;
   onDeleteEvent?: (event: EventListItem) => void;
 };
 
@@ -16,6 +17,7 @@ export default function CalendarDayEventsPanel({
   events,
   onEditEvent,
   onAddComment,
+  onManageParticipants,
   onDeleteEvent,
 }: CalendarDayEventsPanelProps) {
   return (
@@ -35,6 +37,7 @@ export default function CalendarDayEventsPanel({
                 event={event}
                 onEdit={onEditEvent}
                 onAddComment={onAddComment}
+                onManageParticipants={onManageParticipants}
                 onDelete={onDeleteEvent}
               />
             ))}
