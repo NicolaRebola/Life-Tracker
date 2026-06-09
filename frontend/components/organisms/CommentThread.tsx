@@ -31,7 +31,7 @@ export default function CommentThread({
 
   if (comments.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-dashed border-earth-300 bg-earth-100 px-4 py-8 text-center text-sm text-earth-500">
         Todavía no hay comentarios. Sé el primero en comentar.
       </div>
     );

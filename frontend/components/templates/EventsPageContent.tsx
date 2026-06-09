@@ -24,7 +24,7 @@ export default function EventsPageContent() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Eventos</h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-earth-600">
             {activeView === "kanban"
               ? "Organiza tus eventos en diferentes columnas"
               : "Visualiza tus eventos en un calendario mensual"}

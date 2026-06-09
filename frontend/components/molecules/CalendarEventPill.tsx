@@ -14,7 +14,7 @@ export default function CalendarEventPill({ event, onEdit }: CalendarEventPillPr
     <button
       type="button"
       onClick={() => onEdit?.(event)}
-      className="flex items-center gap-1 truncate rounded-md border border-gray-200 bg-white px-2 py-1 text-left text-xs font-medium text-gray-900 shadow-sm"
+      className="flex items-center gap-1 truncate rounded-md border border-earth-300 bg-earth-50 px-2 py-1 text-left text-xs font-medium text-earth-900 shadow-sm"
       title={formatCompactEventTime(event.fromDateTime, event.toDateTime)}
     >
       <span className="min-w-0 flex-1 truncate">{event.name}</span>

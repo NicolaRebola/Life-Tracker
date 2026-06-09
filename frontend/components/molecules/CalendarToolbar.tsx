@@ -19,7 +19,7 @@ export default function CalendarToolbar({
 }: CalendarToolbarProps) {
   return (
     <div className="flex flex-row items-baseline justify-between gap-3">
-      <h2 className="text-lg font-semibold capitalize text-gray-900">
+      <h2 className="text-lg font-semibold capitalize text-earth-900">
         {formatMonthYear(visibleMonth)}
       </h2>
       <div className="flex items-center gap-2">

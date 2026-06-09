@@ -283,7 +283,7 @@ export default function KanbanBoard({
               onChange={(event) =>
                 setMobileLane(event.currentTarget.value as EventStatus)
               }
-              className="h-12 w-full appearance-none rounded-2xl border border-gray-200 bg-gray-100 px-4 text-sm font-semibold text-gray-900 outline-none focus:border-gray-400 focus:bg-white"
+              className="h-12 w-full appearance-none rounded-2xl border border-earth-300 bg-earth-100 px-4 text-sm font-semibold text-earth-900 outline-none focus:border-primary-400 focus:bg-earth-50"
             >
               {EVENT_STATUSES.map((status) => (
                 <option key={status} value={status}>

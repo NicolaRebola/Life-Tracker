@@ -47,7 +47,7 @@ export default function CommentThreadItem({
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50/70 p-3">
+    <article className="flex flex-col gap-3 rounded-xl border border-earth-300/60 bg-earth-100/70 p-3">
       <Avatar
         size="sm"
         fallback={getCommentAuthorInitial(comment)}
@@ -65,7 +65,7 @@ export default function CommentThreadItem({
               onChange={(event) => setDraft(event.currentTarget.value)}
               rows={3}
               disabled={isUpdating}
-              className="w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400"
+              className="w-full resize-none rounded-lg border border-earth-300 bg-earth-50 px-3 py-2 text-sm text-earth-900 outline-none focus:border-primary-400"
             />
             <div className="flex gap-2">
               <Button
@@ -94,7 +94,7 @@ export default function CommentThreadItem({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap text-sm text-gray-800">{comment.body}</p>
+          <p className="whitespace-pre-wrap text-sm text-earth-700">{comment.body}</p>
         )}
 
         {comment.isOwn && !isEditing && (
@@ -102,7 +102,7 @@ export default function CommentThreadItem({
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="text-xs font-medium text-gray-600 hover:text-gray-900"
+              className="text-xs font-medium text-earth-600 hover:text-earth-900"
             >
               Editar
             </button>

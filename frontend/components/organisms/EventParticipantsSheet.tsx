@@ -177,7 +177,7 @@ export default function EventParticipantsSheet({
                     value={email}
                     onChange={(inputEvent) => setEmail(inputEvent.currentTarget.value)}
                     placeholder="persona@email.com"
-                    className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500"
+                    className="min-w-0 flex-1 rounded-xl border border-earth-300 px-3 py-2 text-sm outline-none focus:border-primary-500"
                   />
                   <button
                     type="button"
@@ -185,7 +185,7 @@ export default function EventParticipantsSheet({
                     onClick={() => {
                       void handleInvite();
                     }}
-                    className="rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                    className="rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-primary-text disabled:opacity-60"
                   >
                     Invitar
                   </button>
@@ -196,22 +196,22 @@ export default function EventParticipantsSheet({
 
               <div className="min-h-0 flex-1 space-y-3 overflow-y-auto">
                 {isLoading ? (
-                  <p className="text-sm text-gray-500">Cargando participantes...</p>
+                  <p className="text-sm text-earth-500">Cargando participantes...</p>
                 ) : participants.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                  <div className="rounded-xl border border-dashed border-earth-300 bg-earth-100 px-4 py-8 text-center text-sm text-earth-500">
                     Todavía no hay participantes invitados.
                   </div>
                 ) : (
                   participants.map((participant) => (
                     <div
                       key={`${participant.status}-${participant.id}`}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-3"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-earth-300 p-3"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-gray-900">
+                        <p className="truncate text-sm font-semibold text-earth-900">
                           {getParticipantLabel(participant)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-earth-500">
                           {STATUS_LABELS[participant.status]}
                           {participant.lastDeliveryError
                             ? ` · ${participant.lastDeliveryError}`

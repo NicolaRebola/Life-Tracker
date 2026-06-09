@@ -38,18 +38,18 @@ export default function ConfirmDeleteEventDialog({
           role="alertdialog"
           aria-labelledby="delete-event-title"
           aria-describedby="delete-event-description"
-          className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl"
+          className="rounded-2xl border border-earth-300 bg-earth-50 p-6 shadow-xl"
         >
           <Heading
             id="delete-event-title"
             slot="title"
-            className="text-lg font-bold text-gray-900"
+            className="text-lg font-bold text-earth-900"
           >
             Eliminar evento
           </Heading>
-          <p id="delete-event-description" className="mt-3 text-sm text-gray-600">
+          <p id="delete-event-description" className="mt-3 text-sm text-earth-600">
             ¿Seguro que quieres eliminar{" "}
-            <span className="font-semibold text-gray-900">{event.name}</span>? El
+            <span className="font-semibold text-earth-900">{event.name}</span>? El
             evento se ocultará y se eliminará definitivamente después de 30 días.
           </p>
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
