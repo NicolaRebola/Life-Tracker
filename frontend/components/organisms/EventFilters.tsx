@@ -60,7 +60,7 @@ function StatusFilter({
         onChange={(event) =>
           onChange(event.currentTarget.value as EventStatus | "")
         }
-        className="h-11 w-full appearance-none rounded-2xl border border-gray-200 bg-gray-100 px-4 text-sm font-medium text-gray-900 outline-none focus:border-gray-400 focus:bg-white"
+        className="h-11 w-full appearance-none rounded-2xl border border-earth-300 bg-earth-100 px-4 text-sm font-medium text-earth-900 outline-none focus:border-primary-400 focus:bg-earth-50"
       >
         <option value="">Todos los estados</option>
         {EVENT_STATUSES.map((status) => (
@@ -117,7 +117,7 @@ export default function EventFilters({
             value={name}
             onChange={(event) => onNameChange(event.currentTarget.value)}
             placeholder="Buscar por nombre"
-            className="h-11 w-full rounded-2xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-900 outline-none focus:border-gray-400 focus:bg-white"
+            className="h-11 w-full rounded-2xl border border-earth-300 bg-earth-100 px-4 text-sm text-earth-900 outline-none focus:border-primary-400 focus:bg-earth-50"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default function EventFilters({
           </Button>
 
           {isMoreFiltersOpen && (
-            <div className="absolute right-0 z-40 mt-2 flex w-[min(calc(100vw-2rem),22rem)] flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg">
+            <div className="absolute right-0 z-40 mt-2 flex w-[min(calc(100vw-2rem),22rem)] flex-col gap-3 rounded-2xl border border-earth-300 bg-earth-50 p-3 shadow-lg">
               <StatusFilter
                 id="event-status-filter-mobile"
                 value={status}

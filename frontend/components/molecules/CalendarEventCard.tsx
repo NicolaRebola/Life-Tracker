@@ -21,20 +21,20 @@ export default function CalendarEventCard({
   onDelete,
 }: CalendarEventCardProps) {
   return (
-    <li className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+    <li className="rounded-xl border border-earth-300 bg-earth-50 p-3 shadow-sm">
       <button
         type="button"
         className="w-full text-left"
         onClick={() => onEdit?.(event)}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 flex-1 font-semibold text-gray-900">{event.name}</p>
+          <p className="min-w-0 flex-1 font-semibold text-earth-900">{event.name}</p>
           <EventStatusChip status={event.status} />
         </div>
-        <p className="mt-1 text-xs text-gray-600">
+        <p className="mt-1 text-xs text-earth-600">
           {formatCompactEventTime(event.fromDateTime, event.toDateTime)}
         </p>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-earth-500">
           Creado por {event.creator.displayName || event.creator.email}
         </p>
       </button>

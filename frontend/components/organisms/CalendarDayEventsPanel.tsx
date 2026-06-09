@@ -21,8 +21,8 @@ export default function CalendarDayEventsPanel({
   onDeleteEvent,
 }: CalendarDayEventsPanelProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-gray-200 bg-white p-4 md:hidden">
-      <h3 className="text-sm font-semibold text-gray-900">
+    <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-earth-300 bg-earth-50 p-4 md:hidden">
+      <h3 className="text-sm font-semibold text-earth-900">
         {selectedDayKey
           ? `Eventos del ${selectedDayKey.split("-").reverse().join("/")}`
           : "Selecciona un día"}
@@ -43,10 +43,10 @@ export default function CalendarDayEventsPanel({
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-gray-500">No hay eventos para este día.</p>
+          <p className="mt-3 text-sm text-earth-500">No hay eventos para este día.</p>
         )
       ) : (
-        <p className="mt-3 text-sm text-gray-500">
+        <p className="mt-3 text-sm text-earth-500">
           Toca un día del calendario para ver sus eventos.
         </p>
       )}

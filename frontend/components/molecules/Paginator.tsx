@@ -29,8 +29,8 @@ export default function Paginator({
   const safeTotalPages = Math.max(totalPages, 1);
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 md:flex-row md:items-center md:justify-between">
-      <p className="text-sm text-gray-600">
+    <div className="flex flex-col gap-3 rounded-2xl border border-earth-300 bg-earth-50 p-3 md:flex-row md:items-center md:justify-between">
+      <p className="text-sm text-earth-600">
         {hasResults
           ? `Página ${page} de ${safeTotalPages} (${total} eventos)`
           : "Sin eventos para mostrar"}
@@ -46,7 +46,7 @@ export default function Paginator({
           onChange={(event) =>
             onLimitChange(Number(event.currentTarget.value) as PageSize)
           }
-          className="h-10 min-w-0 rounded-xl border border-gray-200 bg-gray-100 px-3 text-sm font-medium text-gray-900 outline-none focus:border-gray-400 focus:bg-white"
+          className="h-10 min-w-0 rounded-xl border border-earth-300 bg-earth-100 px-3 text-sm font-medium text-earth-900 outline-none focus:border-primary-400 focus:bg-earth-50"
         >
           {PAGE_SIZE_OPTIONS.map((size) => (
             <option key={size} value={size}>

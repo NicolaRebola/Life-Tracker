@@ -1,3 +1,4 @@
+import AppBackground from "@/components/atoms/AppBackground";
 import Navigator from "@/components/organisms/Navigator";
 
 export default function HomeLayout({
@@ -8,7 +9,8 @@ export default function HomeLayout({
   return (
     <main className="h-dvh overflow-hidden flex flex-col">
       <Navigator></Navigator>
-      <div className="min-h-0 flex-1">
+      <AppBackground />
+      <div className="min-h-0 flex-1 z-10">
         {children}
       </div>
     </main>

@@ -44,24 +44,24 @@ export default function ConfirmDeleteCommentDialog({
           role="alertdialog"
           aria-labelledby="delete-comment-title"
           aria-describedby="delete-comment-description"
-          className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl"
+          className="rounded-2xl border border-earth-300 bg-earth-50 p-6 shadow-xl"
         >
           <Heading
             id="delete-comment-title"
             slot="title"
-            className="text-lg font-bold text-gray-900"
+            className="text-lg font-bold text-earth-900"
           >
             Eliminar comentario
           </Heading>
-          <div id="delete-comment-description" className="mt-3 space-y-3 text-sm text-gray-600">
+          <div id="delete-comment-description" className="mt-3 space-y-3 text-sm text-earth-600">
             <p>
               ¿Seguro que quieres eliminar este comentario de{" "}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-earth-900">
                 {getCommentAuthorLabel(comment)}
               </span>
               ?
             </p>
-            <blockquote className="rounded-xl border border-gray-200 bg-gray-50 p-3 text-gray-700">
+            <blockquote className="rounded-xl border border-earth-300 bg-earth-100 p-3 text-earth-700">
               {preview}
             </blockquote>
           </div>

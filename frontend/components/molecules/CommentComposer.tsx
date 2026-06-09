@@ -41,8 +41,8 @@ export default function CommentComposer({
   }
 
   return (
-    <div className="space-y-3 border-t border-gray-200 pt-4">
-      <label htmlFor="event-comment-composer" className="text-sm font-semibold text-gray-900">
+    <div className="space-y-3 border-t border-earth-300 pt-4">
+      <label htmlFor="event-comment-composer" className="text-sm font-semibold text-earth-900">
         Agregar comentario
       </label>
       <textarea
@@ -53,11 +53,11 @@ export default function CommentComposer({
         rows={3}
         placeholder="Escribe un comentario..."
         disabled={isSubmitting}
-        className="w-full resize-none rounded-xl border border-gray-200 bg-white mt-2 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-400 disabled:cursor-not-allowed disabled:bg-gray-50"
+        className="w-full resize-none rounded-xl border border-earth-300 bg-earth-50 mt-2 px-4 py-3 text-sm text-earth-900 outline-none transition focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-earth-100"
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-gray-500">Ctrl + Enter para enviar</p>
+        <p className="text-xs text-earth-500">Ctrl + Enter para enviar</p>
         <Button
           type="button"
           onClick={() => {

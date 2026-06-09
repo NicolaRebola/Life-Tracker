@@ -117,13 +117,13 @@ export default function TagFilter({
           window.setTimeout(() => setIsOpen(false), 150);
         }}
         placeholder="Tags separados por coma"
-        className="h-11 w-full rounded-2xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-900 outline-none focus:border-gray-400 focus:bg-white"
+        className="h-11 w-full rounded-2xl border border-earth-300 bg-earth-100 px-4 text-sm text-earth-900 outline-none focus:border-primary-400 focus:bg-earth-50"
       />
 
       {(isOpen || isSearching) && (
-        <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-earth-300 bg-earth-50 shadow-lg">
           {isSearching ? (
-            <div className="px-4 py-3 text-sm text-gray-500">
+            <div className="px-4 py-3 text-sm text-earth-500">
               Buscando tags...
             </div>
           ) : (
@@ -131,12 +131,12 @@ export default function TagFilter({
               <button
                 key={tag.name}
                 type="button"
-                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-earth-700 hover:bg-earth-100"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => selectSuggestion(tag)}
               >
                 <span>{tag.label}</span>
-                <span className="text-xs text-gray-400">{tag.name}</span>
+                <span className="text-xs text-earth-500/80">{tag.name}</span>
               </button>
             ))
           )}

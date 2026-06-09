@@ -98,10 +98,10 @@ export default function SharedEventContent({ eventId }: SharedEventContentProps)
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-10">
+    <main className="min-h-screen p-4 md:p-10">
       <section className="mx-auto flex max-w-3xl flex-col gap-6">
         {isLoading ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+          <div className="rounded-2xl border border-earth-300/70 bg-earth-50/85 p-6 text-sm text-earth-500 shadow-sm backdrop-blur-xl">
             Cargando evento...
           </div>
         ) : error ? (
@@ -110,26 +110,26 @@ export default function SharedEventContent({ eventId }: SharedEventContentProps)
           </div>
         ) : event ? (
           <>
-            <article className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <article className="rounded-2xl border border-earth-300/70 bg-earth-50/85 p-6 shadow-sm backdrop-blur-xl">
+              <p className="text-xs font-semibold uppercase tracking-wide text-earth-500">
                 Evento compartido
               </p>
-              <h1 className="mt-2 text-2xl font-bold text-gray-900">{event.name}</h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <h1 className="mt-2 text-2xl font-bold text-earth-900">{event.name}</h1>
+              <p className="mt-2 text-sm text-earth-600">
                 {formatEventDateRange(event.fromDateTime, event.toDateTime)}
               </p>
-              <p className="mt-4 text-sm text-gray-800">
+              <p className="mt-4 text-sm text-earth-700">
                 {event.description || "Sin descripción"}
               </p>
               {event.notes && (
-                <p className="mt-3 rounded-xl bg-gray-50 p-3 text-sm text-gray-700">
+                <p className="mt-3 rounded-xl bg-earth-100 p-3 text-sm text-earth-700">
                   {event.notes}
                 </p>
               )}
             </article>
 
-            <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900">Comentarios</h2>
+            <section className="rounded-2xl border border-earth-300/70 bg-earth-50/85 p-6 shadow-sm backdrop-blur-xl">
+              <h2 className="text-lg font-bold text-earth-900">Comentarios</h2>
               <div className="mt-4">
                 <CommentThread comments={comments} />
               </div>

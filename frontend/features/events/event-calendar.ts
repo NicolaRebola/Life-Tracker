@@ -30,9 +30,9 @@ export type CalendarEventSegment = {
 const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
-  TODO: 'bg-blue-100 text-blue-800 border-blue-200',
-  IN_PROGRESS: 'bg-amber-100 text-amber-800 border-amber-200',
-  DONE: 'bg-green-100 text-green-800 border-green-200',
+  TODO: 'border-earth-300 bg-earth-200 text-earth-900',
+  IN_PROGRESS: 'border-earth-400 bg-[#ead7b8] text-[#946b33]',
+  DONE: 'border-earth-sage-100 bg-earth-sage-100 text-earth-sage-600',
 };
 
 function startOfDay(date: Date): Date {

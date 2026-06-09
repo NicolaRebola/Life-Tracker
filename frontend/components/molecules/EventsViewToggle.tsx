@@ -15,7 +15,7 @@ export default function EventsViewToggle({
 }: EventsViewToggleProps) {
   return (
     <div
-      className="inline-flex rounded-2xl border border-gray-200 bg-gray-100 p-1"
+      className="inline-flex rounded-lg border border-earth-300 bg-earth-100 p-1"
       role="tablist"
       aria-label="Vista de eventos"
     >

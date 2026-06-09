@@ -122,21 +122,21 @@ export default function EventForm({
         <form onSubmit={handleSubmit} className="flex h-full flex-col gap-4 pt-5">
           <div className="flex h-full flex-1 flex-col gap-4">
             <input
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Nombre"
               onChange={(event) => updateField("name", event.currentTarget.value)}
               type="text"
               value={values.name}
             />
             <input
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Inicio"
               type="datetime-local"
               onChange={(event) => updateField("fromDateTime", event.currentTarget.value)}
               value={values.fromDateTime}
             />
             <input
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Fin"
               type="datetime-local"
               onChange={(event) => updateField("toDateTime", event.currentTarget.value)}
@@ -144,19 +144,19 @@ export default function EventForm({
             />
 
             <textarea
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Descripción"
               onChange={(event) => updateField("description", event.currentTarget.value)}
               value={values.description}
             />
             <textarea
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Notas"
               onChange={(event) => updateField("notes", event.currentTarget.value)}
               value={values.notes}
             />
             <input
-              className="w-full rounded-md border border-gray-300 bg-gray-100 text-foreground-100"
+              className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               onChange={(event) => updateField("tags", event.currentTarget.value)}
               type="text"
               value={values.tags}

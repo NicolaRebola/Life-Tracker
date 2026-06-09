@@ -40,11 +40,11 @@ export default function ServiceChecker() {
 
   return (
     <div>
-      <button className="bg-blue-800 m-5 text-white px-4 py-2 rounded-md" onClick={handleGetHealth} disabled={loading}>
+      <button className="m-5 rounded-md bg-primary-600 px-4 py-2 text-primary-text" onClick={handleGetHealth} disabled={loading}>
         Get Health
       </button>
       
-      <button className="bg-blue-200 m-5 text-black px-4 py-2 rounded-md" onClick={handleGetDbHealth} disabled={loading}>
+      <button className="m-5 rounded-md bg-primary-100 px-4 py-2 text-primary-800" onClick={handleGetDbHealth} disabled={loading}>
         Get DB Health
       </button>
 

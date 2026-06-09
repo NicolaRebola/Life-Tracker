@@ -48,18 +48,18 @@ export default function AcceptEventInvitation({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
-      <section className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <section className="w-full max-w-md rounded-2xl border border-earth-300/70 bg-earth-50/85 p-6 shadow-sm backdrop-blur-xl">
+        <h1 className="text-2xl font-bold text-earth-900">
           Invitación a evento
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-earth-600">
           Aceptá la invitación para consultar el evento y participar del thread
           de comentarios.
         </p>
 
         {acceptedEventId ? (
-          <div className="mt-6 rounded-xl bg-green-50 p-4 text-sm text-green-700">
+          <div className="mt-6 rounded-xl bg-earth-sage-100 p-4 text-sm text-earth-sage-600">
             Invitación aceptada. Ya podés abrir el evento compartido.
             <a
               href={`/shared/events/${acceptedEventId}`}
@@ -70,12 +70,12 @@ export default function AcceptEventInvitation({
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-earth-700">
               Nombre visible (opcional)
               <input
                 value={displayName}
                 onChange={(event) => setDisplayName(event.currentTarget.value)}
-                className="mt-2 w-full rounded-xl border border-gray-200 px-3 py-2 outline-none focus:border-primary-500"
+                className="mt-2 w-full rounded-xl border border-earth-300 px-3 py-2 outline-none focus:border-primary-500"
                 placeholder="Tu nombre"
               />
             </label>
@@ -88,7 +88,7 @@ export default function AcceptEventInvitation({
               onClick={() => {
                 void handleAccept();
               }}
-              className="w-full rounded-xl bg-primary-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
+              className="w-full rounded-xl bg-primary-500 px-4 py-3 text-sm font-semibold text-primary-text disabled:opacity-60"
             >
               {isSubmitting ? "Aceptando..." : "Aceptar invitación"}
             </button>

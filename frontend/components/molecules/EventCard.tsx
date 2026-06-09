@@ -129,14 +129,14 @@ export default function EventCard({
       onDragEnd={onDragEnd}
       className={draggable ? "cursor-grab active:cursor-grabbing" : undefined}
     >
-    <Card className="relative w-full border border-gray-200 rounded-xl bg-white shadow-sm">
+    <Card className="relative w-full border border-earth-300 rounded-xl bg-earth-50 shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between gap-3 p-4 pb-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-bold text-gray-900">{event.name}</h3>
-          <p className="mt-1 text-xs text-gray-500">
+          <h3 className="truncate text-base font-bold text-earth-900">{event.name}</h3>
+          <p className="mt-1 text-xs text-earth-500">
             {formatEventDateRange(event.fromDateTime, event.toDateTime)}
           </p>
-          <p className="mt-1 truncate text-xs text-gray-500">
+          <p className="mt-1 truncate text-xs text-earth-500">
             Creado por {event.creator.displayName || event.creator.email}
           </p>
         </div>
@@ -144,15 +144,15 @@ export default function EventCard({
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            className="relative inline-flex items-center rounded-md text-gray-600 hover:bg-gray-100"
+            className="relative inline-flex items-center rounded-md text-earth-600 hover:bg-earth-100"
             aria-label={`Abrir comentarios (${event.commentCount})`}
             onClick={() => onAddComment?.(event)}
           >
-            <span className="inline-flex size-8 items-center justify-center rounded-md text-gray-600">
+            <span className="inline-flex size-8 items-center justify-center rounded-md text-earth-600">
               <MessagesIcon />
             </span>
             {event.commentCount > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-white">
+              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-primary-text">
                 {event.commentCount > 99 ? "99+" : event.commentCount}
               </span>
             )}
@@ -160,15 +160,15 @@ export default function EventCard({
 
           <button
             type="button"
-            className="relative inline-flex items-center rounded-md text-gray-600 hover:bg-gray-100"
+            className="relative inline-flex items-center rounded-md text-earth-600 hover:bg-earth-100"
             aria-label={`Abrir participantes (${event.participantCount})`}
             onClick={() => onManageParticipants?.(event)}
           >
-            <span className="inline-flex size-8 items-center justify-center rounded-md text-gray-600">
+            <span className="inline-flex size-8 items-center justify-center rounded-md text-earth-600">
               <ParticipantsIcon />
             </span>
             {event.participantCount > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-white">
+              <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-primary-text">
                 {event.participantCount > 99 ? "99+" : event.participantCount}
               </span>
             )}
@@ -180,18 +180,18 @@ export default function EventCard({
             aria-label="Abrir menú del evento"
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((open) => !open)}
-            className="inline-flex size-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100"
+            className="inline-flex size-8 items-center justify-center rounded-md text-earth-600 hover:bg-earth-100"
           >
             <MoreVerticalIcon />
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-earth-300 bg-earth-50 shadow-lg">
               {availableStatusOptions.map((status) => (
                 <button
                   key={status}
                   type="button"
-                  className="flex w-full items-center px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50 md:hidden"
+                  className="flex w-full items-center px-4 py-3 text-left text-sm text-earth-700 hover:bg-earth-100 md:hidden"
                   onClick={() => {
                     onStatusChange?.(event.id, status);
                     setIsMenuOpen(false);
@@ -202,7 +202,7 @@ export default function EventCard({
               ))}
 
               {availableStatusOptions.length > 0 && (
-                <div className="border-t border-gray-200 md:hidden" />
+                <div className="border-t border-earth-300 md:hidden" />
               )}
 
               <button
@@ -218,7 +218,7 @@ export default function EventCard({
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-earth-700 hover:bg-earth-100"
                 onClick={() => {
                   onAddComment?.(event);
                   setIsMenuOpen(false);
@@ -229,7 +229,7 @@ export default function EventCard({
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-earth-700 hover:bg-earth-100"
                 onClick={() => {
                   onManageParticipants?.(event);
                   setIsMenuOpen(false);
@@ -240,7 +240,7 @@ export default function EventCard({
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-800 hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-earth-700 hover:bg-earth-100"
                 onClick={() => {
                   onEdit?.(event);
                   setIsMenuOpen(false);
@@ -256,7 +256,7 @@ export default function EventCard({
       </CardHeader>
 
       <CardContent className="space-y-3 px-4 pb-4 pt-0">
-        <p className="line-clamp-3 text-sm text-gray-700">
+        <p className="line-clamp-3 text-sm text-earth-700">
           {event.description || "Sin descripción"}
         </p>
 

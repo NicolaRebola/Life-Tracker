@@ -87,7 +87,7 @@ const indicatorStyles = cva(
   {
     variants: {
       status: {
-        online: "bg-green-500",
+        online: "bg-earth-sage-1000",
         offline: "bg-red-500",
         busy: "bg-yellow-500"
       },

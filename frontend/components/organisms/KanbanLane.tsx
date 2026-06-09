@@ -46,19 +46,19 @@ export function KanbanLane({
   }
 
   return (
-    <section className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white">
-      <div className="shrink-0 border-b border-gray-200 bg-white p-3 text-center text-base font-bold text-gray-900 md:text-lg">
+    <section className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-earth-300 bg-earth-50">
+      <div className="shrink-0 border-b border-earth-300 bg-earth-50 p-3 text-center text-base font-bold text-earth-900 md:text-lg">
         {EVENT_STATUS_LABELS[status]}
       </div>
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 md:p-4 ${
-          enableDragAndDrop && draggedEventId ? "bg-gray-50/80" : ""
+          enableDragAndDrop && draggedEventId ? "bg-earth-100/80" : ""
         }`}
       >
         {events.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+          <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-earth-300 bg-earth-100 px-4 py-10 text-center text-sm text-earth-500">
             No hay eventos en esta columna
           </div>
         ) : (

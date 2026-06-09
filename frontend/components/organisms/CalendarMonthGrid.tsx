@@ -23,12 +23,12 @@ export default function CalendarMonthGrid({
 }: CalendarMonthGridProps) {
   return (
     <>
-      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white md:flex">
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-earth-300 bg-earth-50 md:flex">
+        <div className="grid grid-cols-7 border-b border-earth-300 bg-earth-100">
           {weekdayLabels.map((label) => (
             <div
               key={label}
-              className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+              className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-earth-500"
             >
               {label}
             </div>
@@ -40,7 +40,7 @@ export default function CalendarMonthGrid({
             <div
               key={week.days[0]?.key ?? weekIndex}
               role="row"
-              className="grid min-h-32 flex-1 grid-cols-7 border-b border-gray-100 last:border-b-0"
+              className="grid min-h-32 flex-1 grid-cols-7 border-b border-earth-300/60 last:border-b-0"
             >
               {week.days.map((day) => (
                 <CalendarDayCell
@@ -56,12 +56,12 @@ export default function CalendarMonthGrid({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-3 md:hidden">
+      <div className="rounded-2xl border border-earth-300 bg-earth-50 p-3 md:hidden">
         <div className="mb-2 grid grid-cols-7 gap-1">
           {weekdayLabels.map((label) => (
             <div
               key={label}
-              className="text-center text-[10px] font-semibold uppercase text-gray-500"
+              className="text-center text-[10px] font-semibold uppercase text-earth-500"
             >
               {label}
             </div>
@@ -83,8 +83,8 @@ export default function CalendarMonthGrid({
                     isSelected
                       ? "border-primary-400 bg-primary-50 text-primary-700"
                       : day.isCurrentMonth
-                        ? "border-gray-100 bg-white text-gray-900"
-                        : "border-transparent bg-gray-50 text-gray-400"
+                        ? "border-earth-300/60 bg-earth-50 text-earth-900"
+                        : "border-transparent bg-earth-100 text-earth-500/80"
                   } ${day.isToday ? "ring-1 ring-primary-300" : ""}`}
                 >
                   <span className="font-semibold">{day.dayOfMonth}</span>
