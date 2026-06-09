@@ -1,6 +1,5 @@
+import { SESSION_COOKIE_NAME } from "@/app/api/constants";
 import { NextResponse } from "next/server";
-
-const SESSION_COOKIE_NAME = "life_tracker_session";
 
 export async function POST(req: Request) {
   const body = await req.json();
