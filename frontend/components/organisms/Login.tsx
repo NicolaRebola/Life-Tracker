@@ -1,7 +1,7 @@
 "use client";
 
 import { Google } from "@tailgrids/icons";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../tailgrids/core/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "../tailgrids/core/card";
 import { SocialButton } from "../tailgrids/core/social-button";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/firebase";
@@ -87,9 +87,9 @@ export default function Login() {
           <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-[#a86449] text-2xl font-bold text-[#fff8f0] shadow-lg shadow-[#a86449]/25">
             LT
           </div>
-          <CardTitle className="text-4xl font-black tracking-tight text-title-50 sm:text-5xl">
+          <h1 className="text-4xl font-black tracking-tight text-title-50 sm:text-5xl">
             Life Tracker
-          </CardTitle>
+          </h1>
           <CardDescription className="mx-auto mt-3 max-w-md text-base font-medium text-text-50 sm:text-lg">
             Ordená tus días, entendé tus hábitos y convertí tu rutina en progreso real.
           </CardDescription>
