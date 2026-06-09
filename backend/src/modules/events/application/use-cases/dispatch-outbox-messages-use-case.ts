@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   MESSAGE_OUTBOX_REPOSITORY,
   type MessageOutboxRepositoryPort,
@@ -18,6 +18,8 @@ const TRANSIENT_RETRY_DELAYS_MS = [60_000, 5 * 60_000] as const;
 
 @Injectable()
 export class DispatchOutboxMessagesUseCase implements DispatchOutboxMessagesPort {
+  private readonly logger = new Logger(DispatchOutboxMessagesUseCase.name);
+
   constructor(
     @Inject(MESSAGE_OUTBOX_REPOSITORY)
     private readonly outboxRepository: MessageOutboxRepositoryPort,
@@ -38,7 +40,7 @@ export class DispatchOutboxMessagesUseCase implements DispatchOutboxMessagesPort
 
     for (const message of messages) {
       await this.outboxRepository.markProcessing(message.id);
-      const result = await this.messageAdapter.send(message);
+      const result = await this.sendMessage(message);
 
       if (result.ok) {
         await this.outboxRepository.markSent(
@@ -88,5 +90,26 @@ export class DispatchOutboxMessagesUseCase implements DispatchOutboxMessagesPort
 
     const delay = TRANSIENT_RETRY_DELAYS_MS[nextAttemptNumber - 1];
     return delay ? new Date(Date.now() + delay) : undefined;
+  }
+
+  private async sendMessage(message: OutboxMessage) {
+    try {
+      return await this.messageAdapter.send(message);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unknown message adapter error';
+      this.logger.error(
+        `Message adapter failed for outbox message ${message.id}: ${errorMessage}`,
+      );
+
+      return {
+        ok: false as const,
+        failureKind: 'TRANSIENT' as const,
+        errorCode: 'message_adapter_error',
+        message: errorMessage,
+      };
+    }
   }
 }
