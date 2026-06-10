@@ -52,7 +52,21 @@ export default function EventParticipantsSheet({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(min-width: 768px)").matches,
+  );
   const eventId = event?.id;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (query: MediaQueryListEvent) => {
+      setIsDesktop(query.matches);
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !eventId) return;
@@ -164,7 +178,10 @@ export default function EventParticipantsSheet({
       )}
       <Sheet isOpen={isOpen} onOpenChange={onOpenChange}>
         <SheetOverlay>
-          <SheetContent side="right" className="h-full max-w-md">
+          <SheetContent
+            side={isDesktop ? "right" : "bottom"}
+            className={isDesktop ? "h-full max-w-md" : "max-h-[85dvh]"}
+          >
             <SheetHeader>
               <SheetTitle>Participantes</SheetTitle>
               <SheetDescription>{event.name}</SheetDescription>

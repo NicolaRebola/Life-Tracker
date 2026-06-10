@@ -117,10 +117,10 @@ export default function EventForm({
           />
         </div>
       )}
-      <div>
+      <div className="flex min-h-0 flex-1 flex-col">
         <p className="m-0 text-lg font-bold text-title-50">{title}</p>
-        <form onSubmit={handleSubmit} className="flex h-full flex-col gap-4 pt-5">
-          <div className="flex h-full flex-1 flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-4 pt-5">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
             <input
               className="w-full rounded-md border border-earth-400 bg-earth-100 text-foreground-100"
               placeholder="Nombre"
@@ -164,9 +164,11 @@ export default function EventForm({
             />
           </div>
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader /> : submitLabel}
-          </Button>
+          <div className="shrink-0 pt-1">
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? <Loader /> : submitLabel}
+            </Button>
+          </div>
         </form>
       </div>
     </>
