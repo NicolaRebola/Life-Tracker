@@ -35,12 +35,12 @@ export default function CalendarMonthGrid({
           ))}
         </div>
 
-        <div className="flex flex-1 flex-col" role="grid" aria-label="Calendario mensual">
+        <div className="flex min-h-0 flex-1 flex-col" role="grid" aria-label="Calendario mensual">
           {weeks.map((week, weekIndex) => (
             <div
               key={week.days[0]?.key ?? weekIndex}
               role="row"
-              className="grid min-h-32 flex-1 grid-cols-7 border-b border-earth-300/60 last:border-b-0"
+              className="grid min-h-0 flex-1 grid-cols-7 border-b border-earth-300/60 last:border-b-0"
             >
               {week.days.map((day) => (
                 <CalendarDayCell

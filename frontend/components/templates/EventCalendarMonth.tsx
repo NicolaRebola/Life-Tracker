@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Loader from "@/components/atoms/Loader/Loader";
 import ConfirmDeleteEventDialog from "@/components/molecules/ConfirmDeleteEventDialog";
-import CalendarDayEventsPanel from "@/components/organisms/CalendarDayEventsPanel";
+import CalendarDayEventsSheet from "@/components/organisms/CalendarDayEventsSheet";
 import CalendarMonthGrid from "@/components/organisms/CalendarMonthGrid";
 import CalendarToolbar from "@/components/molecules/CalendarToolbar";
 import EventCommentsSheet from "@/components/organisms/EventCommentsSheet";
@@ -43,6 +43,12 @@ export default function EventCalendarMonth({
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
+  const [isDaySheetOpen, setIsDaySheetOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(min-width: 768px)").matches,
+  );
   const [items, setItems] = useState<EventListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>(null);
@@ -61,6 +67,21 @@ export default function EventCalendarMonth({
   const eventsByDay = useMemo(() => groupEventsByDay(items, weeks), [items, weeks]);
 
   const selectedDayEvents = selectedDayKey ? eventsByDay[selectedDayKey] ?? [] : [];
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (query: MediaQueryListEvent) => {
+      setIsDesktop(query.matches);
+      if (query.matches) setIsDaySheetOpen(false);
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  function handleSelectDay(dayKey: string) {
+    setSelectedDayKey(dayKey);
+    if (!isDesktop) setIsDaySheetOpen(true);
+  }
 
   useEffect(() => {
     let isCancelled = false;
@@ -170,7 +191,7 @@ export default function EventCalendarMonth({
   }
 
   return (
-    <div className="mt-5 flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {toast && (
         <div className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-6 md:top-6">
           <Toast
@@ -181,44 +202,56 @@ export default function EventCalendarMonth({
         </div>
       )}
 
-      <CalendarToolbar
-        visibleMonth={visibleMonth}
-        onPreviousMonth={handlePreviousMonth}
-        onNextMonth={handleNextMonth}
-        onToday={handleToday}
-      />
+      <div className="shrink-0">
+        <CalendarToolbar
+          visibleMonth={visibleMonth}
+          onPreviousMonth={handlePreviousMonth}
+          onNextMonth={handleNextMonth}
+          onToday={handleToday}
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center py-16">
           <Loader />
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-4 md:contents">
+        <div className="min-h-0 md:contents md:flex-1">
           <CalendarMonthGrid
             weeks={weeks}
             weekdayLabels={weekdayLabels}
             eventsByDay={eventsByDay}
             selectedDayKey={selectedDayKey}
-            onSelectDay={setSelectedDayKey}
+            onSelectDay={handleSelectDay}
             onEditEvent={onEditEvent}
-          />
-
-          <CalendarDayEventsPanel
-            selectedDayKey={selectedDayKey}
-            events={selectedDayEvents}
-            onEditEvent={onEditEvent}
-            onAddComment={(event) => {
-              setCommentingEvent(event);
-              setIsCommentsOpen(true);
-            }}
-            onManageParticipants={(event) => {
-              setParticipantsEvent(event);
-              setIsParticipantsOpen(true);
-            }}
-            onDeleteEvent={setPendingDeleteEvent}
           />
         </div>
       )}
+
+      <CalendarDayEventsSheet
+        selectedDayKey={selectedDayKey}
+        isOpen={isDaySheetOpen}
+        events={selectedDayEvents}
+        onOpenChange={(open) => {
+          setIsDaySheetOpen(open);
+          if (!open) setSelectedDayKey(null);
+        }}
+        onEditEvent={onEditEvent}
+        onAddComment={(event) => {
+          setIsDaySheetOpen(false);
+          setCommentingEvent(event);
+          setIsCommentsOpen(true);
+        }}
+        onManageParticipants={(event) => {
+          setIsDaySheetOpen(false);
+          setParticipantsEvent(event);
+          setIsParticipantsOpen(true);
+        }}
+        onDeleteEvent={(event) => {
+          setIsDaySheetOpen(false);
+          setPendingDeleteEvent(event);
+        }}
+      />
 
       <ConfirmDeleteEventDialog
         event={pendingDeleteEvent}

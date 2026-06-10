@@ -21,7 +21,7 @@ export default function CalendarDayCell({
     <div
       role="gridcell"
       aria-label={`${day.dayOfMonth}`}
-      className={`flex min-h-32 flex-col border-r border-earth-300/60 p-2 text-left last:border-r-0 ${
+      className={`flex min-h-0 flex-col overflow-hidden border-r border-earth-300/60 p-2 text-left last:border-r-0 ${
         day.isCurrentMonth ? "bg-earth-50" : "bg-earth-100"
       } ${day.isToday ? "ring-1 ring-inset ring-primary-300" : ""}`}
     >
