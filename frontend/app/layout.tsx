@@ -26,11 +26,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="h-dvh overflow-hidden bg-[#f6eadf] text-title-50">
+      <body className="bg-[#f6eadf] text-title-50">
         <AppBackground />
-        <div className="relative z-10 flex h-full min-h-0 flex-col">
+        <div className="relative z-10 flex min-h-dvh flex-col">
           {children}
         </div>
       </body>

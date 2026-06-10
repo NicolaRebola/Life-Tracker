@@ -54,7 +54,7 @@ export function Toast({
   return (
     <div
       className={cn(
-        "flex max-w-112.5 min-w-96.25 items-center gap-3 rounded-lg border border-base-200 p-3 shadow-sm bg-background-100",
+        "flex w-full min-w-0 max-w-md items-center gap-3 rounded-lg border border-base-200 p-3 shadow-sm bg-background-100",
         typeof message === "object" && "relative items-start",
         hideIcon && "py-2"
       )}

@@ -1,4 +1,3 @@
-import AppBackground from "@/components/atoms/AppBackground";
 import Navigator from "@/components/organisms/Navigator";
 
 export default function HomeLayout({
@@ -7,10 +6,9 @@ export default function HomeLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="h-dvh overflow-hidden flex flex-col">
-      <Navigator></Navigator>
-      <AppBackground />
-      <div className="min-h-0 flex-1 z-10">
+    <main className="flex h-dvh flex-col overflow-hidden pt-16 pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-0">
+      <Navigator />
+      <div className="relative z-10 min-h-0 flex-1">
         {children}
       </div>
     </main>
