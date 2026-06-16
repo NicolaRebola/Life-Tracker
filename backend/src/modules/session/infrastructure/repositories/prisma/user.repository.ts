@@ -28,4 +28,17 @@ export class PrismaUserRepository implements UserRepositoryPort {
     const user = await this.prisma.user.findUnique({ where: { id } });
     return user ? UserPrismaMapper.toDomain(user) : null;
   }
+
+  async findByEmail(email: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email.trim(),
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    return user ? UserPrismaMapper.toDomain(user) : null;
+  }
 }

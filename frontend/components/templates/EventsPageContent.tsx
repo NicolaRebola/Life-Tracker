@@ -15,6 +15,8 @@ export default function EventsPageContent() {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   function handleEditEvent(event: EventListItem) {
+    if (!event.isCreator) return;
+
     setEditingEvent(event);
     setIsEditOpen(true);
   }

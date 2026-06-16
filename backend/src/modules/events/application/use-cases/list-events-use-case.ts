@@ -76,6 +76,7 @@ export class ListEventsUseCase implements ListEventsPort {
 
     const { items, total } = await this.eventRepository.findMany({
       userId: command.userId,
+      userEmail: command.userEmail,
       name: name || undefined,
       status: command.status,
       tags: tags?.length ? tags : undefined,

@@ -1,40 +1,109 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 type AcceptEventInvitationProps = {
   token: string;
 };
 
+type EventInvitationPreview = {
+  eventId: string;
+  status: "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+  expiresAt: string;
+  invitedUserExists: boolean;
+};
+
 export default function AcceptEventInvitation({
   token,
 }: AcceptEventInvitationProps) {
+  const router = useRouter();
+  const [invitation, setInvitation] = useState<EventInvitationPreview | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [acceptedEventId, setAcceptedEventId] = useState<string | null>(null);
+
+  const acceptInvitation = useCallback(async (nextDisplayName: string | null) => {
+    const response = await fetch(`/api/event-invitations/${token}/accept`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ displayName: nextDisplayName }),
+    });
+
+    if (!response.ok) {
+      const responseError = await response.json().catch(() => null);
+      throw new Error(
+        responseError?.message ?? "No se pudo aceptar la invitación",
+      );
+    }
+
+    return response.json();
+  }, [token]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function fetchInvitation() {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/event-invitations/${token}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const responseError = await response.json().catch(() => null);
+          throw new Error(
+            responseError?.message ?? "No se pudo cargar la invitación",
+          );
+        }
+
+        const data = await response.json();
+        if (isCancelled) return;
+
+        if (data.invitation?.invitedUserExists) {
+          await acceptInvitation(null);
+          if (isCancelled) return;
+          router.replace("/home");
+          return;
+        }
+
+        setInvitation(data.invitation);
+      } catch (fetchError) {
+        if (isCancelled) return;
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "No se pudo cargar la invitación",
+        );
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void fetchInvitation();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [acceptInvitation, router, token]);
 
   async function handleAccept() {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/event-invitations/${token}/accept`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ displayName: displayName.trim() || null }),
-      });
-
-      if (!response.ok) {
-        const responseError = await response.json().catch(() => null);
-        throw new Error(
-          responseError?.message ?? "No se pudo aceptar la invitación",
-        );
-      }
-
-      const data = await response.json();
+      const data = await acceptInvitation(displayName.trim() || null);
       setAcceptedEventId(data.participant.eventId);
     } catch (acceptError) {
       setError(
@@ -54,11 +123,13 @@ export default function AcceptEventInvitation({
           Invitación a evento
         </h1>
         <p className="mt-2 text-sm text-earth-600">
-          Aceptá la invitación para consultar el evento y participar del thread
-          de comentarios.
+          Consultá el evento compartido o creá tu cuenta para usar Life Tracker
+          con tu propio espacio.
         </p>
 
-        {acceptedEventId ? (
+        {isLoading ? (
+          <p className="mt-6 text-sm text-earth-600">Validando invitación...</p>
+        ) : acceptedEventId ? (
           <div className="mt-6 rounded-xl bg-earth-sage-100 p-4 text-sm text-earth-sage-600">
             Invitación aceptada. Ya podés abrir el evento compartido.
             <a
@@ -68,7 +139,7 @@ export default function AcceptEventInvitation({
               Ver evento
             </a>
           </div>
-        ) : (
+        ) : invitation ? (
           <div className="mt-6 space-y-4">
             <label className="block text-sm font-medium text-earth-700">
               Nombre visible (opcional)
@@ -90,9 +161,18 @@ export default function AcceptEventInvitation({
               }}
               className="w-full rounded-xl bg-primary-500 px-4 py-3 text-sm font-semibold text-primary-text disabled:opacity-60"
             >
-              {isSubmitting ? "Aceptando..." : "Aceptar invitación"}
+              {isSubmitting ? "Abriendo evento..." : "Ver evento"}
             </button>
+
+            <Link
+              href="/"
+              className="block w-full rounded-xl border border-earth-300 px-4 py-3 text-center text-sm font-semibold text-earth-700 hover:bg-earth-100"
+            >
+              Crear cuenta
+            </Link>
           </div>
+        ) : (
+          error && <p className="mt-6 text-sm text-red-600">{error}</p>
         )}
       </section>
     </main>

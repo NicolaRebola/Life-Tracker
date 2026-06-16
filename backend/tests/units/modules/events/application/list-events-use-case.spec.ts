@@ -24,6 +24,12 @@ describe('ListEventsUseCase', () => {
             tags: [{ name: 'universidad', label: 'universidad' }],
           }),
           commentCount: 3,
+          participantCount: 0,
+          creator: {
+            id: 'user-1',
+            displayName: 'Test User',
+            email: 'test@example.com',
+          },
         },
       ],
       total: 1,
@@ -44,12 +50,14 @@ describe('ListEventsUseCase', () => {
   it('lists events for the authenticated user with pagination metadata', async () => {
     const result = await useCase.execute({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       page: 1,
       limit: 10,
     });
 
     expect(findMany).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       name: undefined,
       status: undefined,
       tags: undefined,
@@ -65,6 +73,7 @@ describe('ListEventsUseCase', () => {
       status: 'TODO',
       tags: [{ name: 'universidad', label: 'universidad' }],
       commentCount: 3,
+      isCreator: true,
     });
     expect(result.pagination).toEqual({
       page: 1,
@@ -77,6 +86,7 @@ describe('ListEventsUseCase', () => {
   it('normalizes filters before querying the repository', async () => {
     await useCase.execute({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       name: '  clase  ',
       status: 'IN_PROGRESS',
       tags: [' Eti ', ' queta 1 ', ''],
@@ -86,6 +96,7 @@ describe('ListEventsUseCase', () => {
 
     expect(findMany).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       name: 'clase',
       status: 'IN_PROGRESS',
       tags: ['eti', 'queta 1'],
@@ -100,6 +111,7 @@ describe('ListEventsUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'user-1',
+        userEmail: 'test@example.com',
         page: 0,
       }),
     ).rejects.toBeInstanceOf(ListEventsValidationError);
@@ -111,6 +123,7 @@ describe('ListEventsUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'user-1',
+        userEmail: 'test@example.com',
         limit: 15,
       }),
     ).rejects.toMatchObject<ListEventsValidationError>({
@@ -124,6 +137,7 @@ describe('ListEventsUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'user-1',
+        userEmail: 'test@example.com',
         status: 'INVALID' as 'TODO',
       }),
     ).rejects.toMatchObject<ListEventsValidationError>({
@@ -136,12 +150,14 @@ describe('ListEventsUseCase', () => {
   it('passes normalized date range filters to the repository', async () => {
     await useCase.execute({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       fromDateTime: '2026-06-01T00:00:00.000Z',
       toDateTime: '2026-07-01T00:00:00.000Z',
     });
 
     expect(findMany).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       name: undefined,
       status: undefined,
       tags: undefined,
@@ -156,6 +172,7 @@ describe('ListEventsUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'user-1',
+        userEmail: 'test@example.com',
         fromDateTime: 'invalid-date',
         toDateTime: '2026-07-01T00:00:00.000Z',
       }),
@@ -166,6 +183,7 @@ describe('ListEventsUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'user-1',
+        userEmail: 'test@example.com',
         fromDateTime: '2026-07-01T00:00:00.000Z',
         toDateTime: '2026-06-01T00:00:00.000Z',
       }),
@@ -174,5 +192,55 @@ describe('ListEventsUseCase', () => {
     } as ListEventsValidationError);
 
     expect(findMany).not.toHaveBeenCalled();
+  });
+
+  it('marks invited events with isCreator false', async () => {
+    findMany.mockResolvedValueOnce({
+      items: [
+        {
+          event: Event.rehydrate({
+            id: 'event-2',
+            userId: 'owner-1',
+            name: 'Evento compartido',
+            description: 'Descripcion',
+            notes: '',
+            fromDateTime: new Date('2026-06-05T08:29:00.000Z'),
+            toDateTime: new Date('2026-06-05T09:29:00.000Z'),
+            status: 'TODO',
+            tags: [],
+          }),
+          commentCount: 0,
+          participantCount: 2,
+          creator: {
+            id: 'owner-1',
+            displayName: 'Owner User',
+            email: 'owner@example.com',
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      userEmail: 'guest@example.com',
+      page: 1,
+      limit: 10,
+    });
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        userEmail: 'guest@example.com',
+      }),
+    );
+    expect(result.items[0]).toMatchObject({
+      id: 'event-2',
+      isCreator: false,
+      creator: {
+        id: 'owner-1',
+        email: 'owner@example.com',
+      },
+    });
   });
 });

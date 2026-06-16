@@ -32,6 +32,7 @@ import { CREATE_EVENT } from './application/ports/inbound/create-event.port';
 import { DELETE_EVENT_COMMENT } from './application/ports/inbound/delete-event-comment.port';
 import { DELETE_EVENT } from './application/ports/inbound/delete-event.port';
 import { DISPATCH_OUTBOX_MESSAGES } from './application/ports/inbound/dispatch-outbox-messages.port';
+import { GET_EVENT_INVITATION } from './application/ports/inbound/get-event-invitation.port';
 import { GET_SHARED_EVENT } from './application/ports/inbound/get-shared-event.port';
 import { INVITE_EVENT_PARTICIPANT } from './application/ports/inbound/invite-event-participant.port';
 import { LIST_EVENT_COMMENTS } from './application/ports/inbound/list-event-comments.port';
@@ -51,6 +52,7 @@ import { CreateEventUseCase } from './application/use-cases/create-event-use-cas
 import { DeleteEventCommentUseCase } from './application/use-cases/delete-event-comment-use-case';
 import { DeleteEventUseCase } from './application/use-cases/delete-event-use-case';
 import { DispatchOutboxMessagesUseCase } from './application/use-cases/dispatch-outbox-messages-use-case';
+import { GetEventInvitationUseCase } from './application/use-cases/get-event-invitation-use-case';
 import { GetSharedEventUseCase } from './application/use-cases/get-shared-event-use-case';
 import { InviteEventParticipantUseCase } from './application/use-cases/invite-event-participant-use-case';
 import { ListEventCommentsUseCase } from './application/use-cases/list-event-comments-use-case';
@@ -91,6 +93,7 @@ import { UpdateEventUseCase } from './application/use-cases/update-event-use-cas
       provide: DISPATCH_OUTBOX_MESSAGES,
       useExisting: DispatchOutboxMessagesUseCase,
     },
+    { provide: GET_EVENT_INVITATION, useExisting: GetEventInvitationUseCase },
     { provide: GET_SHARED_EVENT, useExisting: GetSharedEventUseCase },
     {
       provide: INVITE_EVENT_PARTICIPANT,

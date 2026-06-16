@@ -8,6 +8,10 @@ import {
   type EventInvitationRepositoryPort,
   type ParticipantSessionRepositoryPort,
 } from '../../domain';
+import {
+  USER_REPOSITORY,
+  type UserRepositoryPort,
+} from 'src/modules/session/domain';
 import { EventInvitationExpiredError } from '../errors/event-invitation-expired.error';
 import { EventInvitationNotFoundError } from '../errors/event-invitation-not-found.error';
 import type {
@@ -25,6 +29,8 @@ export class AcceptEventInvitationUseCase implements AcceptEventInvitationPort {
     private readonly invitationRepository: EventInvitationRepositoryPort,
     @Inject(PARTICIPANT_SESSION_REPOSITORY)
     private readonly participantSessionRepository: ParticipantSessionRepositoryPort,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepositoryPort,
   ) {}
 
   async execute(
@@ -61,10 +67,15 @@ export class AcceptEventInvitationUseCase implements AcceptEventInvitationPort {
       throw new EventInvitationNotFoundError();
     }
 
+    const invitedUser = await this.userRepository.findByEmail(
+      acceptedInvitation.invitedEmail,
+    );
+
     const { participant } =
       await this.invitationRepository.acceptWithParticipant({
         invitation: acceptedInvitation,
         participantDisplayName: command.displayName,
+        participantUserId: invitedUser?.id ?? null,
       });
 
     const participantSessionToken = randomBytes(32).toString('base64url');

@@ -117,7 +117,7 @@ export default function KanbanBoard({
 
   async function handleStatusChange(eventId: string, status: EventStatus) {
     const current = items.find((event) => event.id === eventId);
-    if (!current || current.status === status) return;
+    if (!current || !current.isCreator || current.status === status) return;
 
     const previousItems = items;
     setIsUpdating(true);

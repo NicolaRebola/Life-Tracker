@@ -118,6 +118,7 @@ export default function EventCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
+  const isCreator = event.isCreator;
   const availableStatusOptions = STATUS_OPTIONS.filter(
     (status) => status !== event.status,
   );
@@ -137,8 +138,15 @@ export default function EventCard({
             {formatEventDateRange(event.fromDateTime, event.toDateTime)}
           </p>
           <p className="mt-1 truncate text-xs text-earth-500">
-            Creado por {event.creator.displayName || event.creator.email}
+            {isCreator
+              ? `Creado por ${event.creator.displayName || event.creator.email}`
+              : `Invitado · Creado por ${event.creator.displayName || event.creator.email}`}
           </p>
+          {!isCreator && (
+            <Badge color="gray" size="sm" className="mt-2">
+              Invitado
+            </Badge>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -158,6 +166,8 @@ export default function EventCard({
             )}
           </button>
 
+          {isCreator && (
+            <>
           <button
             type="button"
             className="relative inline-flex items-center rounded-md text-earth-600 hover:bg-earth-100"
@@ -252,6 +262,8 @@ export default function EventCard({
             </div>
           )}
           </div>
+            </>
+          )}
         </div>
       </CardHeader>
 

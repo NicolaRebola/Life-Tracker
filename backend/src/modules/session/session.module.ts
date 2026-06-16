@@ -24,6 +24,6 @@ import { PrismaSessionRepository } from './infrastructure/repositories/prisma/se
     { provide: SESSION_REPOSITORY, useExisting: PrismaSessionRepository },
     { provide: FIREBASE_TOKEN_VERIFIER, useExisting: FirebaseAdminService },
   ],
-  exports: [SessionGuard, SESSION_REPOSITORY],
+  exports: [SessionGuard, SESSION_REPOSITORY, USER_REPOSITORY],
 })
 export class SessionModule {}

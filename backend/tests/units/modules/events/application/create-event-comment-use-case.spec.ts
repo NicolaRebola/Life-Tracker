@@ -4,6 +4,7 @@ import { EventNotFoundError } from 'src/modules/events/application/errors/event-
 import { Event } from 'src/modules/events/domain';
 import type {
   EventCommentRepositoryPort,
+  EventParticipantRepositoryPort,
   EventRepositoryPort,
 } from 'src/modules/events/domain';
 
@@ -11,6 +12,7 @@ describe('CreateEventCommentUseCase', () => {
   let save: jest.Mock;
   let eventRepository: EventRepositoryPort;
   let eventCommentRepository: EventCommentRepositoryPort;
+  let eventParticipantRepository: EventParticipantRepositoryPort;
   let useCase: CreateEventCommentUseCase;
 
   beforeEach(() => {
@@ -63,9 +65,17 @@ describe('CreateEventCommentUseCase', () => {
       softDelete: jest.fn(),
       countByEventIds: jest.fn(),
     };
+    eventParticipantRepository = {
+      findActiveById: jest.fn(),
+      findActiveByEventAndEmail: jest.fn(),
+      listByEventForOwner: jest.fn(),
+      upsertAccepted: jest.fn(),
+      softRevoke: jest.fn(),
+    };
     useCase = new CreateEventCommentUseCase(
       eventRepository,
       eventCommentRepository,
+      eventParticipantRepository,
     );
   });
 
@@ -106,5 +116,59 @@ describe('CreateEventCommentUseCase', () => {
     ).rejects.toBeInstanceOf(CreateEventCommentValidationError);
 
     expect(save).not.toHaveBeenCalled();
+  });
+
+  it('creates a comment for an authenticated participant', async () => {
+    eventRepository.findByIdForOwner = jest.fn().mockResolvedValue(null);
+    eventParticipantRepository.findActiveByEventAndEmail = jest.fn().mockResolvedValue({
+      id: 'participant-1',
+      eventId: 'event-1',
+      email: 'participant@example.com',
+      displayName: 'Participant',
+      userId: 'user-2',
+      joinedAt: new Date('2026-06-08T10:00:00.000Z'),
+      revokedAt: null,
+    });
+    eventRepository.findByIdForParticipant = jest.fn().mockResolvedValue(
+      Event.rehydrate({
+        id: 'event-1',
+        userId: 'user-1',
+        name: 'Evento',
+        description: 'Descripcion',
+        notes: '',
+        fromDateTime: new Date('2026-06-05T08:29:00.000Z'),
+        toDateTime: new Date('2026-06-05T09:29:00.000Z'),
+        status: 'TODO',
+        tags: [],
+      }),
+    );
+    save.mockResolvedValue({
+      id: 'comment-1',
+      eventId: 'event-1',
+      userId: null,
+      participantId: 'participant-1',
+      body: 'Comentario',
+      createdAt: new Date('2026-06-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-06-08T10:00:00.000Z'),
+      author: {
+        kind: 'PARTICIPANT',
+        id: 'participant-1',
+        displayName: 'Participant',
+        email: 'participant@example.com',
+      },
+    });
+
+    const result = await useCase.execute({
+      userId: 'user-2',
+      userEmail: 'participant@example.com',
+      eventId: 'event-1',
+      body: 'Comentario',
+    });
+
+    expect(result.comment).toMatchObject({
+      participantId: 'participant-1',
+      isOwn: true,
+    });
+    expect(save).toHaveBeenCalledTimes(1);
   });
 });

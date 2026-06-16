@@ -11,6 +11,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://life-tracker--portfolio-blog-ee307.us-east4.hosted.app',
+      'https://lifetrackers.org',
     ],
     credentials: true,
   });

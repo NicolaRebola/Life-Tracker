@@ -88,6 +88,50 @@ test.describe("event comments", () => {
 
     await expect.poll(() => deletedCommentId).toBe("comment-1");
   });
+
+  test("allows invited users to open and add comments", async ({ page }) => {
+    const event = createMockEvent({
+      commentCount: 0,
+      isCreator: false,
+      creator: {
+        id: "owner-1",
+        displayName: "Owner User",
+        email: "owner@example.com",
+      },
+    });
+    const comments: MockComment[] = [];
+    let createdBody: string | null = null;
+
+    await mockDefaultEventsApp(page, [event]);
+    await page.route("**/api/events/evt-1/comments", async (route) => {
+      if (route.request().method() === "GET") return fulfillJson(route, { items: comments });
+      createdBody = (await route.request().postDataJSON()).body;
+      const comment = createMockComment({
+        id: "participant-comment",
+        body: createdBody ?? "",
+        userId: null,
+        participantId: "participant-1",
+        author: {
+          kind: "PARTICIPANT",
+          id: "participant-1",
+          displayName: "Test User",
+          email: "test@example.com",
+        },
+      });
+      comments.push(comment);
+      return fulfillJson(route, { comment }, 201);
+    });
+
+    await page.goto("/home/events");
+    await eventCard(page, event.name).getByLabel("Abrir comentarios (0)").click();
+
+    const sheet = eventSheet(page);
+    await sheet.getByLabel("Agregar comentario").fill("Comentario de invitado");
+    await sheet.getByRole("button", { name: "Comentar" }).click();
+
+    await expect.poll(() => createdBody).toBe("Comentario de invitado");
+    await expect(page.getByText("Comentario de invitado")).toBeVisible();
+  });
 });
 
 test.describe("event participants", () => {
@@ -154,6 +198,16 @@ test.describe("event invitations", () => {
   test("accepts an invitation and links to the shared event", async ({ page }) => {
     let displayName: string | null = null;
 
+    await page.route("**/api/event-invitations/token-123", (route) =>
+      fulfillJson(route, {
+        invitation: {
+          eventId: "evt-1",
+          status: "PENDING",
+          expiresAt: new Date("2026-06-11T12:00:00.000Z").toISOString(),
+          invitedUserExists: false,
+        },
+      }),
+    );
     await page.route("**/api/event-invitations/token-123/accept", async (route) => {
       displayName = (await route.request().postDataJSON()).displayName;
       return fulfillJson(route, { participant: { eventId: "evt-1" } });
@@ -161,7 +215,7 @@ test.describe("event invitations", () => {
 
     await page.goto("/event-invitations/token-123");
     await page.getByLabel("Nombre visible (opcional)").fill("Invitada E2E");
-    await page.getByRole("button", { name: "Aceptar invitación" }).click();
+    await page.getByRole("button", { name: "Ver evento" }).click();
 
     await expect.poll(() => displayName).toBe("Invitada E2E");
     await expect(page.getByRole("link", { name: "Ver evento" })).toHaveAttribute(
@@ -171,13 +225,48 @@ test.describe("event invitations", () => {
   });
 
   test("shows a recoverable error for an invalid invitation", async ({ page }) => {
+    await page.route("**/api/event-invitations/invalid-token", (route) =>
+      fulfillJson(route, {
+        invitation: {
+          eventId: "evt-1",
+          status: "PENDING",
+          expiresAt: new Date("2026-06-11T12:00:00.000Z").toISOString(),
+          invitedUserExists: false,
+        },
+      }),
+    );
     await page.route("**/api/event-invitations/invalid-token/accept", (route) =>
       fulfillJson(route, { message: "Invitación expirada" }, 410),
     );
 
     await page.goto("/event-invitations/invalid-token");
-    await page.getByRole("button", { name: "Aceptar invitación" }).click();
+    await page.getByRole("button", { name: "Ver evento" }).click();
 
     await expect(page.getByText("Invitación expirada")).toBeVisible();
+  });
+
+  test("accepts and redirects existing users to the app home", async ({ page }) => {
+    let acceptedDisplayName: string | null | undefined;
+
+    await mockDefaultEventsApp(page);
+    await page.route("**/api/event-invitations/existing-user-token", (route) =>
+      fulfillJson(route, {
+        invitation: {
+          eventId: "evt-1",
+          status: "PENDING",
+          expiresAt: new Date("2026-06-11T12:00:00.000Z").toISOString(),
+          invitedUserExists: true,
+        },
+      }),
+    );
+    await page.route("**/api/event-invitations/existing-user-token/accept", async (route) => {
+      acceptedDisplayName = (await route.request().postDataJSON()).displayName;
+      return fulfillJson(route, { participant: { eventId: "evt-1" } });
+    });
+
+    await page.goto("/event-invitations/existing-user-token");
+
+    await expect.poll(() => acceptedDisplayName).toBeNull();
+    await expect(page).toHaveURL(/\/home\/events$/);
   });
 });

@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   EVENT_COMMENT_REPOSITORY,
+  EVENT_PARTICIPANT_REPOSITORY,
   EVENT_REPOSITORY,
   EventComment,
   EventCommentValidationError,
   type EventActor,
   type EventCommentRepositoryPort,
+  type EventParticipantRepositoryPort,
   type EventRepositoryPort,
 } from '../../domain';
 import { CreateEventCommentValidationError } from '../errors/create-event-comment-validation.error';
@@ -24,12 +26,14 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
     private readonly eventRepository: EventRepositoryPort,
     @Inject(EVENT_COMMENT_REPOSITORY)
     private readonly eventCommentRepository: EventCommentRepositoryPort,
+    @Inject(EVENT_PARTICIPANT_REPOSITORY)
+    private readonly eventParticipantRepository: EventParticipantRepositoryPort,
   ) {}
 
   async execute(
     command: CreateEventCommentCommand,
   ): Promise<CreateEventCommentResult> {
-    const actor = this.resolveActor(command);
+    const actor = await this.resolveActor(command);
     const event =
       actor.type === 'OWNER'
         ? await this.eventRepository.findByIdForOwner(
@@ -45,7 +49,7 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
       throw new EventNotFoundError();
     }
 
-    const comment = this.createDomainComment(command);
+    const comment = this.createDomainComment(command, actor);
     const savedComment = await this.eventCommentRepository.save(comment);
 
     return {
@@ -55,12 +59,14 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
 
   private createDomainComment(
     command: CreateEventCommentCommand,
+    actor: EventActor,
   ): EventComment {
     try {
       return EventComment.create({
         eventId: command.eventId,
-        userId: command.userId,
-        participantId: command.participantId,
+        userId: actor.type === 'OWNER' ? actor.userId : undefined,
+        participantId:
+          actor.type === 'PARTICIPANT' ? actor.participantId : undefined,
         body: command.body,
       });
     } catch (error) {
@@ -75,9 +81,36 @@ export class CreateEventCommentUseCase implements CreateEventCommentPort {
     }
   }
 
-  private resolveActor(command: CreateEventCommentCommand): EventActor {
+  private async resolveActor(
+    command: CreateEventCommentCommand,
+  ): Promise<EventActor> {
     if (command.userId) {
-      return { type: 'OWNER', userId: command.userId };
+      const ownerEvent = await this.eventRepository.findByIdForOwner(
+        command.userId,
+        command.eventId,
+      );
+
+      if (ownerEvent) {
+        return { type: 'OWNER', userId: command.userId };
+      }
+
+      if (command.userEmail) {
+        const participant =
+          await this.eventParticipantRepository.findActiveByEventAndEmail(
+            command.eventId,
+            command.userEmail,
+          );
+
+        if (participant) {
+          return {
+            type: 'PARTICIPANT',
+            participantId: participant.id,
+            email: participant.email,
+          };
+        }
+      }
+
+      throw new EventNotFoundError();
     }
 
     if (command.participantId) {
