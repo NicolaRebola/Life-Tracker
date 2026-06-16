@@ -4,6 +4,7 @@ import { CreateEventUseCase } from './use-cases/create-event-use-case';
 import { DeleteEventCommentUseCase } from './use-cases/delete-event-comment-use-case';
 import { DeleteEventUseCase } from './use-cases/delete-event-use-case';
 import { DispatchOutboxMessagesUseCase } from './use-cases/dispatch-outbox-messages-use-case';
+import { GetEventInvitationUseCase } from './use-cases/get-event-invitation-use-case';
 import { GetSharedEventUseCase } from './use-cases/get-shared-event-use-case';
 import { InviteEventParticipantUseCase } from './use-cases/invite-event-participant-use-case';
 import { ListEventParticipantsUseCase } from './use-cases/list-event-participants-use-case';
@@ -22,6 +23,7 @@ export * from './ports/inbound/create-event.port';
 export * from './ports/inbound/delete-event-comment.port';
 export * from './ports/inbound/delete-event.port';
 export * from './ports/inbound/dispatch-outbox-messages.port';
+export * from './ports/inbound/get-event-invitation.port';
 export * from './ports/inbound/get-shared-event.port';
 export * from './ports/inbound/invite-event-participant.port';
 export * from './ports/inbound/list-event-comments.port';
@@ -43,6 +45,7 @@ export const USE_CASES = [
   DeleteEventCommentUseCase,
   DeleteEventUseCase,
   DispatchOutboxMessagesUseCase,
+  GetEventInvitationUseCase,
   GetSharedEventUseCase,
   InviteEventParticipantUseCase,
   ListEventCommentsUseCase,
