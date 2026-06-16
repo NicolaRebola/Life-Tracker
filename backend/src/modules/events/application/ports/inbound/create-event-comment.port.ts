@@ -4,6 +4,7 @@ export const CREATE_EVENT_COMMENT = Symbol('CREATE_EVENT_COMMENT');
 
 export type CreateEventCommentCommand = {
   userId?: string;
+  userEmail?: string;
   participantId?: string;
   eventId: string;
   body: string;

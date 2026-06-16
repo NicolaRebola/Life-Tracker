@@ -117,7 +117,7 @@ export default function KanbanBoard({
 
   async function handleStatusChange(eventId: string, status: EventStatus) {
     const current = items.find((event) => event.id === eventId);
-    if (!current || current.status === status) return;
+    if (!current || !current.isCreator || current.status === status) return;
 
     const previousItems = items;
     setIsUpdating(true);
@@ -243,7 +243,7 @@ export default function KanbanBoard({
   }, []);
 
   return (
-    <div className="mt-5 flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {toast && (
         <div className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-6 md:top-6">
           <Toast

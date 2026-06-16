@@ -121,8 +121,18 @@ export class PrismaEventRepository implements EventRepositoryPort {
 
   async findMany(criteria: ListEventsCriteria): Promise<PaginatedEvents> {
     const where: Prisma.EventWhereInput = {
-      userId: criteria.userId,
       deletedAt: null,
+      OR: [
+        { userId: criteria.userId },
+        {
+          participants: {
+            some: {
+              revokedAt: null,
+              OR: [{ userId: criteria.userId }, { email: criteria.userEmail }],
+            },
+          },
+        },
+      ],
       ...(criteria.name
         ? {
             name: {

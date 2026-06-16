@@ -19,6 +19,7 @@ export type EventCommentListItem = {
 
 export type ListEventCommentsCommand = {
   userId?: string;
+  userEmail?: string;
   participantId?: string;
   eventId: string;
 };

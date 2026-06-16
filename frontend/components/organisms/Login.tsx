@@ -24,15 +24,13 @@ export default function Login() {
           credentials: "include",
         });
 
-        if (!response.ok) {
-          return;
-        }
+        if (response.ok) {
+          const data = (await response.json()) as { authenticated?: boolean };
 
-        const data = (await response.json()) as { authenticated?: boolean };
-
-        if (data.authenticated) {
-          router.replace("/home");
-          return;
+          if (data.authenticated) {
+            router.replace("/home");
+            return;
+          }
         }
       } catch {
         // The user can still sign in manually if the session check fails.

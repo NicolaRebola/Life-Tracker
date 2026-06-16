@@ -66,7 +66,7 @@ export function KanbanLane({
             <EventCard
               key={event.id}
               event={event}
-              draggable={enableDragAndDrop}
+              draggable={enableDragAndDrop && event.isCreator}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onStatusChange={onStatusChange}

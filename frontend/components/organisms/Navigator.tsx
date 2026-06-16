@@ -32,7 +32,7 @@ export default function Navigator() {
 
   return (
     <>
-      <div className="hidden w-full p-5 border-b border-[#ead3c2]/70 flex flex-row items-center justify-between bg-[#fff8f0]/70 backdrop-blur-xl md:flex">
+      <header className="fixed inset-x-0 top-0 z-40 hidden h-16 w-full items-center justify-between border-b border-[#ead3c2]/70 bg-[#fff8f0]/70 px-5 backdrop-blur-xl md:flex">
         <h1 className="font-semibold text-[#5f3d31]">Life Tracker</h1>
         <div className="flex flex-row gap-2">
           {renderButtons(false)}
@@ -40,13 +40,13 @@ export default function Navigator() {
         <div>
           <Avatar fallback="N"></Avatar>
         </div>
-      </div>
-      <div className="flex w-full p-5 border-b border-[#ead3c2]/70 flex flex-row items-center justify-between bg-[#fff8f0]/70 backdrop-blur-xl md:hidden">
+      </header>
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#ead3c2]/70 bg-[#fff8f0]/70 px-5 backdrop-blur-xl md:hidden">
         <h1 className="font-semibold text-[#5f3d31]">Life Tracker</h1>
         <div>
           <Avatar fallback="N"></Avatar>
         </div>
-      </div>
+      </header>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#ead3c2]/70 bg-[#fff8f0]/75 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur-xl md:hidden">
         <div className="mx-auto flex max-w-md gap-2">
           {renderButtons(true)}

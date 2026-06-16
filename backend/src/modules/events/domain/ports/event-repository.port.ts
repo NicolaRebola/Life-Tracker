@@ -5,6 +5,7 @@ export const EVENT_REPOSITORY = Symbol('EVENT_REPOSITORY');
 
 export type ListEventsCriteria = {
   userId: string;
+  userEmail: string;
   name?: string;
   status?: EventStatus;
   tags?: string[];

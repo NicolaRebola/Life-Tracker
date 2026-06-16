@@ -4,6 +4,7 @@ export const LIST_EVENTS = Symbol('LIST_EVENTS');
 
 export type ListEventsCommand = {
   userId: string;
+  userEmail: string;
   name?: string;
   status?: EventStatus;
   tags?: string[];

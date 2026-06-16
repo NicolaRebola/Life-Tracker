@@ -15,15 +15,17 @@ export default function EventsPageContent() {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   function handleEditEvent(event: EventListItem) {
+    if (!event.isCreator) return;
+
     setEditingEvent(event);
     setIsEditOpen(true);
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col p-4 pb-20 md:p-10 md:pb-10">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex h-full min-h-0 flex-col gap-0 overflow-hidden p-3 md:p-6">
+      <div className="flex shrink-0 flex-col gap-3 pb-3 md:flex-row md:items-center md:justify-between md:pb-4">
         <div>
-          <h1 className="text-2xl font-bold">Eventos</h1>
+          <h1 className="text-xl font-bold md:text-2xl">Eventos</h1>
           <p className="text-sm text-earth-600">
             {activeView === "kanban"
               ? "Organiza tus eventos en diferentes columnas"

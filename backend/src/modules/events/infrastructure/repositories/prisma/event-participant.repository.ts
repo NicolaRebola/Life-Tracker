@@ -1,3 +1,4 @@
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import type {
@@ -32,7 +33,10 @@ export class PrismaEventParticipantRepository implements EventParticipantReposit
     const row = await this.prisma.eventParticipant.findFirst({
       where: {
         eventId,
-        email,
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
         revokedAt: null,
         event: { deletedAt: null },
       },
