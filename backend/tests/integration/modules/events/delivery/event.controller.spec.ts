@@ -315,6 +315,7 @@ describe('EventController (integration)', () => {
 
     expect(listEventsUseCase.execute).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       name: 'clase',
       status: 'TODO',
       tags: ['universidad', 'analisis'],
@@ -631,6 +632,7 @@ describe('EventController (integration)', () => {
 
     expect(listEventCommentsUseCase.execute).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       eventId: 'event-1',
     });
   });
@@ -656,6 +658,7 @@ describe('EventController (integration)', () => {
 
     expect(createEventCommentUseCase.execute).toHaveBeenCalledWith({
       userId: 'user-1',
+      userEmail: 'test@example.com',
       eventId: 'event-1',
       body: 'Comentario',
     });

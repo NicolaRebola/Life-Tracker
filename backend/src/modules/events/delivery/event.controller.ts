@@ -167,6 +167,7 @@ export class EventController {
 
       return await this.listEventsUseCase.execute({
         userId: req.user.id,
+        userEmail: req.user.email,
         name: query.name,
         status: query.status as EventStatus | undefined,
         tags,
@@ -357,6 +358,7 @@ export class EventController {
     try {
       return await this.listEventCommentsUseCase.execute({
         userId: req.user.id,
+        userEmail: req.user.email,
         eventId,
       });
     } catch (error) {
@@ -381,6 +383,7 @@ export class EventController {
     try {
       return await this.createEventCommentUseCase.execute({
         userId: req.user.id,
+        userEmail: req.user.email,
         eventId,
         body: body.body,
       });
