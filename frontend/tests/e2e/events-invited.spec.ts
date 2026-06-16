@@ -20,7 +20,9 @@ const invitedEvent = createMockEvent({
 test.describe("invited events", () => {
   test.use({ viewport: { width: 1280, height: 720 } });
 
-  test("shows invited events in kanban without owner actions", async ({ page }) => {
+  test("shows invited events in kanban with comments but without owner actions", async ({
+    page,
+  }) => {
     await mockDefaultEventsApp(page, [invitedEvent]);
     await page.goto("/home/events");
 
@@ -28,8 +30,8 @@ test.describe("invited events", () => {
     await expect(card).toBeVisible();
     await expect(card.getByText("Invitado · Creado por Owner User")).toBeVisible();
     await expect(card.locator("span", { hasText: "Invitado" })).toBeVisible();
+    await expect(card.getByLabel(/Abrir comentarios/)).toBeVisible();
     await expect(card.getByLabel("Abrir menú del evento")).toHaveCount(0);
-    await expect(card.getByLabel(/Abrir comentarios/)).toHaveCount(0);
     await expect(card.getByLabel(/Abrir participantes/)).toHaveCount(0);
   });
 
